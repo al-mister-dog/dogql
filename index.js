@@ -341,12 +341,13 @@ exports.retrieve = async function() {
 }
 
 
+//NEW FUNCTIONS TO BE INTEGRATED
 
 let conditions = [];
 let conjunctions = [];
 exports.filterComplex = {
-  like(x) {
-    const selected = objectify(x);
+  like(cndtn) {
+    const selected = objectify(cndtn);
     const condition = `${selected.field} LIKE '${selected.value}'`
     conditions.push(condition)
     return this
@@ -387,13 +388,13 @@ exports.filterComplex = {
     conditions.push(condition);
     return this
   },
-  lst(cndtn) {
+  ltn(cndtn) {
     const selected = objectify(cndtn);
     const condition = `${selected.field} < ${selected.value}`;
     conditions.push(condition);
     return this
   },
-  lstEqual(cndtn) {
+  ltnEqual(cndtn) {
     const selected = objectify(cndtn);
     const condition = `${selected.field} <= ${selected.value}`;
     conditions.push(condition);
@@ -440,4 +441,73 @@ exports.filterComplex = {
 exports.where = (filterQuery) => {
   queryValues.filters = filterQuery;
   return this
+}
+
+
+//CRUD OPERATIONS
+const insert = (title, object) => {
+  let fields = []
+  let valueArraysToPush = []
+  let values = [];
+  let valueLength;
+
+  for (const [key, value] of Object.entries(object)) {
+    fields.push(`${key}`)
+    valueArraysToPush.push(value)
+    valueLength = value.length
+  }
+  if (typeof valueArraysToPush[0] === 'object') {
+    for (let i = 0; i < valueLength ; i++) {
+      let valueArrays = []
+       valueArraysToPush.forEach(value => {
+         if (value[i] === parseInt(value[i])) { 
+           valueArrays.push(`${value[i]}`)  
+         } else {
+           valueArrays.push(`'${value[i]}'`)
+         }
+       })
+      values.push(`(${valueArrays})`)
+     }
+  } else {
+    values.push(`('${valueArraysToPush[0]}')`)
+  }
+
+  values = values.join(', ')
+  fields = fields.join(', ')
+  
+  let command = `INSERT INTO ${title} (${fields}) VALUES ${values}`
+  
+  console.log(command)
+}
+
+  insert('players', {
+    name: ['john', 'dan', 'bill'],
+    age: [32, 35, 21],
+    positon: ['lw', 'rb', 'NULL']
+  })
+
+  insert('players', { name: 'john' })
+
+
+
+
+exports.insertPlayers = (req, res, next) => {
+  const players = tables.players;
+  dogql.insertMany(players, {
+    name: ['john', 'dan', 'bill'],
+    age: [32, 35, 21],
+    positon: ['lw', 'rb', 'NULL']
+  })
+}
+
+exports.find = (selectedObjectArray) => {
+  const selected = objectify(selectedObjectArray);
+  for (let i = 0; i < selected.length; i++) {
+    if (i === 0) {
+      queryValues.filters += ` WHERE ${selected[i].field} = '${selected[i].value}'`
+    } else {
+      queryValues.filters += ` AND ${selected[i].field} = '${selected[i].value}'`
+    }
+  };
+  return this;
 }
