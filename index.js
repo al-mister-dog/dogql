@@ -438,14 +438,9 @@ exports.filterComplex = {
   }
 }
 
-exports.where = (filterQuery) => {
-  queryValues.filters = filterQuery;
-  return this
-}
-
 
 //CRUD OPERATIONS
-const insert = (title, object) => {
+exports.insert = (title, object) => {
   let fields = []
   let valueArraysToPush = []
   let values = [];
@@ -461,43 +456,56 @@ const insert = (title, object) => {
       let valueArrays = []
        valueArraysToPush.forEach(value => {
          if (value[i] === parseInt(value[i])) { 
-           valueArrays.push(`${value[i]}`)  
+           console.log(value[i])
+           valueArrays.push(value[i])  
          } else {
-           valueArrays.push(`'${value[i]}'`)
+           valueArrays.push(`${value[i]}`)
          }
        })
-      values.push(`(${valueArrays})`)
+      values.push(valueArrays)
      }
   } else {
-    values.push(`('${valueArraysToPush[0]}')`)
+    let valArray = []
+    valueArraysToPush.forEach(valueArray => {
+      valArray.push(`${valueArray}`)
+    })
+    values.push(valArray)
   }
-
-  values = values.join(', ')
   fields = fields.join(', ')
-  
-  let command = `INSERT INTO ${title} (${fields}) VALUES ${values}`
-  
-  console.log(command)
+  console.log(values)
+  let sql = `INSERT INTO ${title.title} (${fields}) VALUES ?`
+  console.log(sql)
+  db.query(sql, [values], (err, result) => { 
+    if (err) {
+      console.log(result)
+      throw err;
+    }
+    console.log(result);
+  });
 }
 
-  insert('players', {
-    name: ['john', 'dan', 'bill'],
-    age: [32, 35, 21],
-    positon: ['lw', 'rb', 'NULL']
-  })
 
-  insert('players', { name: 'john' })
+let tableToUpdate = ''
+let setParameters = ''
+exports.to = (object) => {
+  console.log(object)
+  console.log(setParameters)
+  console.log(tableToUpdate)
+  return this
+}
 
-
-
-
-exports.insertPlayers = (req, res, next) => {
-  const players = tables.players;
-  dogql.insertMany(players, {
-    name: ['john', 'dan', 'bill'],
-    age: [32, 35, 21],
-    positon: ['lw', 'rb', 'NULL']
-  })
+exports.update = (table, filters) => {
+  tableToUpdate = table.title;
+  let selectedObjectArray = sanitiseArray(filters);
+  const selected = objectify(selectedObjectArray);
+  for (let i = 0; i < selected.length; i++) {
+    if (i === 0) {
+      setParameters += ` WHERE ${selected[i].field} = '${selected[i].value}'`
+    } else {
+      setParameters += ` AND ${selected[i].field} = '${selected[i].value}'`
+    }
+  };
+  return this;
 }
 
 exports.find = (selectedObjectArray) => {
