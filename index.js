@@ -282,21 +282,20 @@ function buildQuery() {
   return queryString;
 }
 
-let originalObjectValues = {};
-
-function storeOriginalQueryValues(object) {
-  originalObjectValues = object;
-  return this;
-}
-storeOriginalQueryValues(queryValues)
-
 function resetObjectValues() {
-  queryValues = originalObjectValues;
+  queryValues = {
+    tableTitle: '',
+    selected: [],
+    filters: '',
+    functions: [],
+    limit: ''
+  }
 }
 
 //DB QUERIES
 exports.query = function(res) {
   const queryString = buildQuery();
+  console.log(queryString)
   db.query(queryString, (err, result) => { 
      if (err) throw err;
      res.send(result);
