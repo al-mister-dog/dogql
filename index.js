@@ -289,6 +289,19 @@ function sanitiseArray(selected) {
   }
 }
 
+function createWhereQueries(selectedObjectArray) {
+  let filters = ''
+  const selected = objectify(selectedObjectArray);
+  for (let i = 0; i < selected.length; i++) {
+    if (i === 0) {
+      filters += ` WHERE ${selected[i].field} = '${selected[i].value}'`
+    } else {
+      filters += ` AND ${selected[i].field} = '${selected[i].value}'`
+    }
+  };
+  return filters
+}
+
 //DB QUERIES
 exports.query = function(res) {
   let queryString = buildQuery()
