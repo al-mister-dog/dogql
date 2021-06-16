@@ -125,28 +125,16 @@ exports.join = (table, conditions) => {
   } 
 }
 
-exports.filter = (selectedObjectArray) => {
-  const selected = objectify(selectedObjectArray);
-  for (let i = 0; i < selected.length; i++) {
-    if (i === 0) {
-      queryValues.filters += ` WHERE ${selected[i].field} = '${selected[i].value}'`
-    } else {
-      queryValues.filters += ` AND ${selected[i].field} = '${selected[i].value}'`
-    }
-  };
+exports.filter = (selected) => {
+  const filters = createWhereQueries([selected]);
+  queryValues.filters += filters;
   return this;
 }
 
 exports.sort = (selectedObject) => {
-  const object = objectify(selectedObject);
-  const field = object.field
-  let direction;
-  if (object.value == 1) {
-    direction = 'ASC';
-  } else if (object.value == -1){
-    direction = 'DESC';
-  }
-  this.orders = ` ORDER BY ${field} ${direction}`
+  const selected = objectify(selectedObject);
+  const directions = {"1": 'ASC', "-1": 'DESC'};
+  queryValues.orders = ` ORDER BY ${selected.field} ${directions[selected.value]}`;
   return this;
 };
 
@@ -260,27 +248,6 @@ function checkValueInDb(value) {
  return booleans.includes(true)
 }
 
-function buildQuery() {
-  let selected = queryValues.selected.join(', ')
-  if (!queryValues.joins) {
-    queryValues.joins = '';
-  };
-  if (!queryValues.filters) {
-    queryValues.filters = '';
-  };
-  if (!queryValues.orders) {
-    queryValues.orders = ''
-  };
-  if (!queryValues.groupings) {
-   queryValues.groupings = ''
-  };
-  if (!queryValues.limit) {
-    queryValues.limit = ''
-   };
-  const queryString = `SELECT ${selected} FROM ${queryValues.tableTitle}${queryValues.joins}${queryValues.filters}${queryValues.orders}${queryValues.groupings}${queryValues.limit}`;
-  return queryString;
-}
-
 function sanitiseArray(selected) {
   if (!Array.isArray(selected)) {
     return [selected];
@@ -302,21 +269,47 @@ function createWhereQueries(selectedObjectArray) {
   return filters
 }
 
+function buildQuery() {
+  let selected = queryValues.selected.join(', ')
+  if (!queryValues.joins) {
+    queryValues.joins = '';
+  };
+  if (!queryValues.filters) {
+    queryValues.filters = '';
+  };
+  if (!queryValues.orders) {
+    queryValues.orders = ''
+  };
+  if (!queryValues.groupings) {
+   queryValues.groupings = ''
+  };
+  if (!queryValues.limit) {
+    queryValues.limit = ''
+   };
+  const queryString = `SELECT ${selected} FROM ${queryValues.tableTitle}${queryValues.joins}${queryValues.filters}${queryValues.orders}${queryValues.groupings}${queryValues.limit}`;
+  return queryString;
+}
+
+let originalObjectValues = {};
+
+function storeOriginalQueryValues(object) {
+  originalObjectValues = object;
+  return this;
+}
+storeOriginalQueryValues(queryValues)
+
+function resetObjectValues() {
+  queryValues = originalObjectValues;
+}
+
 //DB QUERIES
 exports.query = function(res) {
-  let queryString = buildQuery()
-  console.log(queryString)
+  const queryString = buildQuery();
   db.query(queryString, (err, result) => { 
      if (err) throw err;
      res.send(result);
   });
-  queryValues = {
-    tableTitle: '',
-    selected: [],
-    filters: '',
-    functions: [],
-    limit: ''
-  };
+  resetObjectValues();
 }
 
 
