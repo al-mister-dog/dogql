@@ -282,7 +282,7 @@ function buildQuery() {
   return queryString;
 }
 
-function resetObjectValues() {
+function resetQueryValues() {
   queryValues = {
     tableTitle: '',
     selected: [],
@@ -300,7 +300,7 @@ exports.query = function(res) {
      if (err) throw err;
      res.send(result);
   });
-  resetObjectValues();
+  resetQueryValues();
 }
 
 
@@ -325,12 +325,7 @@ exports.retrieve = async function() {
     });
   };
   
-  queryValues = {
-    tableTitle: '',
-    selected: [],
-    filters: '',
-    functions: [],
-  };
+  resetQueryValues()
 
   await getResults()
   
