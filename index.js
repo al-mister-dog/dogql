@@ -63,16 +63,8 @@ let queryValues = {
 
 
 exports.get = (selectedTable) => {
-  // console.log(selectedTable)
-  // object = selectedTable
-  queryValues.tableTitle = `${selectedTable.title}`
-  // filters = ''
-  // orders = ''
-  // aggregates = [] //*1
-  // selected = [] 
-  // this.mappedObjects = []
-  // mappedObjects.push(selectedTable)
-  return this
+  queryValues.tableTitle = `${selectedTable.title}`;
+  return this;
 }
 
 //BASIC QUERIES
