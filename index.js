@@ -289,7 +289,7 @@ function sanitiseArray(selected) {
   }
 }
 
-//DB QUERY
+//DB QUERIES
 exports.query = function(res) {
   let queryString = buildQuery()
   console.log(queryString)
@@ -343,6 +343,8 @@ exports.retrieve = async function() {
 
 //NEW FUNCTIONS TO BE INTEGRATED
 
+
+//FILTERCOMPLEX
 let conditions = [];
 let conjunctions = [];
 exports.filterComplex = {
@@ -486,36 +488,41 @@ exports.insert = (title, object) => {
 
 
 let tableToUpdate = ''
-let setParameters = ''
-exports.to = (object) => {
-  console.log(object)
-  console.log(setParameters)
-  console.log(tableToUpdate)
-  return this
+let valueConditions = ''
+exports.set = (object) => {
+  let fields = []
+  for (const [key, value] of Object.entries(object)) {
+    fields.push(`${key} = '${value}'`)
+  }
+  const valuesToUpdate = fields.join(', ')
+  const sql = `UPDATE ${tableToUpdate} SET ${valuesToUpdate}${valueConditions}`
+  console.log(sql)
+  db.query(sql, (err, result) => { 
+    if (err) {
+      console.log(result)
+      throw err;
+    }
+    console.log(result);
+  });
 }
 
 exports.update = (table, filters) => {
   tableToUpdate = table.title;
   let selectedObjectArray = sanitiseArray(filters);
-  const selected = objectify(selectedObjectArray);
-  for (let i = 0; i < selected.length; i++) {
-    if (i === 0) {
-      setParameters += ` WHERE ${selected[i].field} = '${selected[i].value}'`
-    } else {
-      setParameters += ` AND ${selected[i].field} = '${selected[i].value}'`
-    }
-  };
+  valueConditions = createWhereQueries(selectedObjectArray);
   return this;
 }
 
-exports.find = (selectedObjectArray) => {
-  const selected = objectify(selectedObjectArray);
-  for (let i = 0; i < selected.length; i++) {
-    if (i === 0) {
-      queryValues.filters += ` WHERE ${selected[i].field} = '${selected[i].value}'`
-    } else {
-      queryValues.filters += ` AND ${selected[i].field} = '${selected[i].value}'`
-    }
-  };
-  return this;
-}
+
+
+// exports.find = (selectedObjectArray) => {
+//   const selected = objectify(selectedObjectArray);
+//   for (let i = 0; i < selected.length; i++) {
+//     if (i === 0) {
+//       queryValues.filters += ` WHERE ${selected[i].field} = '${selected[i].value}'`
+//     } else {
+//       queryValues.filters += ` AND ${selected[i].field} = '${selected[i].value}'`
+//     }
+//   };
+//   return this;
+// }

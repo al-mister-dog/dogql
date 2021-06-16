@@ -84,3 +84,12 @@ exports.getEmployees = (req, res, send) => {
 }
 //response: DAVOLIO
 ```
+## CRUD Operations
+### Update
+```javascript
+dogql.update(customers, {CustomerId: 1})
+.set({ 
+  ContactName: 'Alfred Schmidt',
+  City: 'Frankfurt'
+})
+```
