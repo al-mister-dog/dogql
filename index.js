@@ -261,6 +261,14 @@ function createWhereQueries(selectedObjectArray) {
   return filters
 }
 
+function createSetQueries(object) {
+  let sets = []
+  for (const [key, value] of Object.entries(object)) {
+    sets.push(`${key} = '${value}'`)
+  }
+  return sets
+}
+
 function buildQuery() {
   let selected = queryValues.selected.join(', ')
   if (!queryValues.joins) {
@@ -308,7 +316,7 @@ exports.retrieve = async function() {
   let queryString = buildQuery();
   console.log(queryString);
   let array = [];
-
+  
   function getResults() {
     return new Promise((resolve, reject) => {
       db.query(queryString, (err, results) => { 
@@ -324,12 +332,9 @@ exports.retrieve = async function() {
       });
     });
   };
-  
-  resetQueryValues()
-
-  await getResults()
-  
-  return array
+  resetQueryValues();
+  await getResults();
+  return array;
 }
 
 
@@ -478,17 +483,13 @@ exports.insert = (title, object) => {
   });
 }
 
-
-let tableToUpdate = ''
-let valueConditions = ''
-exports.set = (object) => {
-  let fields = []
-  for (const [key, value] of Object.entries(object)) {
-    fields.push(`${key} = '${value}'`)
-  }
-  const valuesToUpdate = fields.join(', ')
-  const sql = `UPDATE ${tableToUpdate} SET ${valuesToUpdate}${valueConditions}`
-  console.log(sql)
+exports.update = (table, object) => {
+  const tableToUpdate = table.title;
+  const conditionsArray = sanitiseArray(object.where);
+  const valueConditions = createWhereQueries(conditionsArray);
+  const sets = createSetQueries(object.set);
+  const valuesToUpdate = sets.join(', ');
+  const sql = `UPDATE ${tableToUpdate} SET ${valuesToUpdate}${valueConditions}`;
   db.query(sql, (err, result) => { 
     if (err) {
       console.log(result)
@@ -496,25 +497,4 @@ exports.set = (object) => {
     }
     console.log(result);
   });
-}
-
-exports.update = (table, filters) => {
-  tableToUpdate = table.title;
-  let selectedObjectArray = sanitiseArray(filters);
-  valueConditions = createWhereQueries(selectedObjectArray);
-  return this;
-}
-
-
-
-// exports.find = (selectedObjectArray) => {
-//   const selected = objectify(selectedObjectArray);
-//   for (let i = 0; i < selected.length; i++) {
-//     if (i === 0) {
-//       queryValues.filters += ` WHERE ${selected[i].field} = '${selected[i].value}'`
-//     } else {
-//       queryValues.filters += ` AND ${selected[i].field} = '${selected[i].value}'`
-//     }
-//   };
-//   return this;
-// }
+};
