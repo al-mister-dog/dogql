@@ -69,19 +69,14 @@ exports.getEmployees = (req, res, send) => {
 ```
 Fetch data and make changes before sending a response with ```retrieve```.
 ```javascript
-exports.getEmployees = (req, res, send) => {
-  const employees = tables.employees
-  dogql.get(employees)
+exports.getEmployees = async (req, res, send) => {
+  const employees = tables.employees;
+  const results = await dogql.get(employees)
   .select()
-  .retrieve()
-  .then(results => {
-    const employeeOne = results[0].LastName.toUpperCase()
-    res.send(employeeOne)
-  })
-  .catch(err => {
-    console.log(err)
-  })
-}
+  .retrieve();
+  const employeeOne = results[0].LastName.toUpperCase();
+  res.send(employeeOne);
+};
 //response: DAVOLIO
 ```
 ## CRUD Operations
