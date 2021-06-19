@@ -80,11 +80,36 @@ exports.getEmployees = async (req, res, send) => {
 //response: DAVOLIO
 ```
 ## CRUD Operations
-### Update
+### Insert
+```insert``` takes a table as the first argument and an object as the second argument. The object is populated with the values you wish to insert into your table. The key of the object must match the field names specified in the sql table.
+#### dogql
 ```javascript
-dogql.update(customers, {CustomerId: 1})
-.set({ 
-  ContactName: 'Alfred Schmidt',
-  City: 'Frankfurt'
+  const customers = tables.customers
+  dogql.insert(customers, {
+    CompanyName: 'Cardinal',
+    ContactName: 'Tom B. Erichsen',
+    Address: 'Skagen 21',
+    City: 'Stavanger',
+    PostalCode: '4006',
+    Country: 'Norway',
+  })
+```
+#### sql
+```sql
+INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Country)
+VALUES ('Cardinal', 'Tom B. Erichsen', 'Skagen 21', 'Stavanger', '4006', 'Norway');
+```
+
+### Update
+```update``` takes a table as the first argument, and then an object. The object consists of two query objects, ```set``` and ```where```. ```set``` represents the values you want to update, and ```where``` specifies the table entry you wish to make your updates.
+#### dogql
+```javascript
+dogql.update(customers, {
+  set: { ContactName: 'Alfred Schmidt', City: 'Frankfurt' },
+  where: { CustomerId: 1 }
 })
+```
+#### sql
+```sql
+SET ContactName = 'Alfred Schmidt', City = 'Frankfurt' WHERE CustomerId = 1
 ```
