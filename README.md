@@ -111,5 +111,7 @@ dogql.update(customers, {
 ```
 #### sql
 ```sql
-SET ContactName = 'Alfred Schmidt', City = 'Frankfurt' WHERE CustomerId = 1
+UPDATE Customers
+SET ContactName = 'Alfred Schmidt', City= 'Frankfurt'
+WHERE CustomerID = 1;
 ```
