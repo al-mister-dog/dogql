@@ -58,11 +58,13 @@ let queryValues = {
   selected: [],
   filters: '',
   functions: [],
+  joins: '',
   limit: ''
 }
 
 
 exports.get = (selectedTable) => {
+  mapObject(selectedTable);
   queryValues.tableTitle = `${selectedTable.title}`;
   return this;
 }
@@ -103,14 +105,16 @@ exports.selectAs = (selected) => {
  return this
 }
 
-exports.join = (table, conditions) => {
-  mapObject(table)
-  let mainTableValue = `${this.object.title}.${conditions[0]}`
-  let joinTableValue = `${table.title}.${conditions[1]}`
-  let mainTableValueExists = checkValueInDb(mainTableValue)
-  let joinTableValueExists = checkValueInDb(joinTableValue)
+exports.join = (table, on) => {
+  mapObject(table);
+  let mainTableValue = `${queryValues.tableTitle}.${on.on[0]}`;
+  let joinTableValue = `${table.title}.${on.on[1]}`;
+  let mainTableValueExists = checkValueInDb(mainTableValue);
+  let joinTableValueExists = checkValueInDb(joinTableValue);
+  console.log(mainTableValueExists, joinTableValueExists)
   if (mainTableValueExists && joinTableValueExists > -1) {
-    this.joins = ` JOIN ${table.title} ON ${mainTableValue} = ${joinTableValue}`
+    queryValues.joins = ` JOIN ${table.title} ON ${mainTableValue} = ${joinTableValue}`
+    console.log(queryValues.joins)
     return this
   } else {
     console.log('value does not exist in database')
@@ -229,15 +233,16 @@ function getKeyValuePair(value) {
 }
 
 function checkValueInDb(value) {
- let booleans = []
- for (let i = 0; i < this.mappedObjects.length; i++) {
-   if (Object.values(this.mappedObjects[i]).indexOf(value) > -1) {
-     booleans.push(true)
-   } else {
-     booleans.push(false)
-   }
- }
- return booleans.includes(true)
+// console.log(mappedObjects)
+  let booleans = []
+  for (let i = 0; i < mappedObjects.length; i++) {
+    if (Object.values(mappedObjects[i]).indexOf(value) > -1) {
+      booleans.push(true)
+    } else {
+      booleans.push(false)
+    }
+  }
+  return booleans.includes(true)
 }
 
 function sanitiseArray(selected) {
@@ -296,6 +301,7 @@ function resetQueryValues() {
     selected: [],
     filters: '',
     functions: [],
+    joins: '',
     limit: ''
   }
 }
