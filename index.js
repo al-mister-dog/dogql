@@ -1,8 +1,8 @@
 const mysql = require('mysql2')
 
+//DATABASE CONNECTION AND CREATE TABLE-OBJECT MAPPERS
 let db;
 let dbTables = {};
-
 exports.db = function(options) {
   db = mysql.createConnection(options);
 
@@ -16,7 +16,6 @@ exports.db = function(options) {
 
   db.query('SHOW TABLES', (err, databaseTables) => { 
     if (err) throw err;
-    let len = databaseTables.length
     for (let i = 0; i < databaseTables.length; i++) {
       for (const [tableInDatabase, tableName] of Object.entries(databaseTables[i])) {
         dbTables[tableName] = { title: tableName }
@@ -32,27 +31,174 @@ exports.db = function(options) {
   });
 };
 
+//SEND TABLE-OBJECT MAPPERS TO APPLICATION
 exports.tables = function() {
   return dbTables
 }
+
+
+
+
+
+//DB QUERIES
+exports.query = function(res) {
+  const queryString = buildQuery();
+  db.query(queryString, (err, result) => { 
+     if (err) throw err;
+     res.send(result);
+  });
+  resetQueryValues();
+}
+
+exports.retrieve = async function() {
+  let queryString = buildQuery();
+  console.log(queryString);
+  let array = [];
   
-//GLOBAL VARIABLES/CONSTRUCTORS
-queryString = ''
-//query string variables
-selected = []
-let valsSelectedAs = ''
-let joins = ''
-let filters = ''
-let orders = ''
-let groupings = ''
-//reference variables
-let object = {}
-let joinObject = {}
-let mappedObjects = []
-let tableTitle = ''
-let aggregates = []
-//deprecated variables
-// functionString = ''
+  function getResults() {
+    return new Promise((resolve, reject) => {
+      db.query(queryString, (err, results) => { 
+        if (err) throw reject(err);
+        results.forEach(result => {
+          let object = {}
+          for (const [key, value] of Object.entries(result)) {
+            object[key] = `${value}`
+          };
+          array.push(object)
+        });
+        resolve(results)
+      });
+    });
+  };
+  resetQueryValues();
+  await getResults();
+  return array;
+}
+
+
+
+
+
+//CRUD OPERATIONS
+exports.insert = (title, object) => {
+  let fields = []
+  let valueArraysToPush = []
+  let values = [];
+  let valueLength;
+
+  for (const [key, value] of Object.entries(object)) {
+    fields.push(`${key}`)
+    valueArraysToPush.push(value)
+    valueLength = value.length
+  }
+  if (typeof valueArraysToPush[0] === 'object') {
+    for (let i = 0; i < valueLength ; i++) {
+      let valueArrays = []
+       valueArraysToPush.forEach(value => {
+         if (value[i] === parseInt(value[i])) { 
+           console.log(value[i])
+           valueArrays.push(value[i])  
+         } else {
+           valueArrays.push(`${value[i]}`)
+         }
+       })
+      values.push(valueArrays)
+     }
+  } else {
+    let valArray = []
+    valueArraysToPush.forEach(valueArray => {
+      valArray.push(`${valueArray}`)
+    })
+    values.push(valArray)
+  }
+  fields = fields.join(', ')
+  console.log(values)
+  let sql = `INSERT INTO ${title.title} (${fields}) VALUES ?`
+  console.log(sql)
+  db.query(sql, [values], (err, result) => { 
+    if (err) {
+      console.log(result)
+      throw err;
+    }
+    console.log(result);
+  });
+}
+
+exports.update = (table, object) => {
+  const tableToUpdate = table.title;
+  const conditionsArray = sanitiseArray(object.where);
+  const valueConditions = createWhereQueries(conditionsArray);
+  const sets = createSetQueries(object.set);
+  const valuesToUpdate = sets.join(', ');
+  const sql = `UPDATE ${tableToUpdate} SET ${valuesToUpdate}${valueConditions}`;
+  db.query(sql, (err, result) => { 
+    if (err) {
+      console.log(result)
+      throw err;
+    }
+    console.log(result);
+  });
+};
+
+exports.delete = (table, object) => {
+  const tableToUpdate = table.title;
+  const conditionsArray = sanitiseArray(object);
+  const valuesToDelete = createWhereQueries(conditionsArray);
+  const sql = `DELETE FROM ${tableToUpdate}${valuesToDelete}`;
+
+  db.query(sql, (err, result) => { 
+    if (err) {
+      console.log(result)
+      throw err;
+    }
+    console.log(result);
+  });
+}
+
+exports.clearTable = (table) => {
+  const tableToDelete = table.title;
+  const sql = `DELETE FROM ${tableToDelete}`;
+  db.query(sql, (err, result) => { 
+    if (err) {
+      console.log(result)
+      throw err;
+    }
+    console.log(result);
+  });
+};
+
+exports.deleteTable = (table) => {
+  const tableToDelete = table.title;
+  const sql = `DROP TABLE ${tableToDelete}`;
+  db.query(sql, (err, result) => { 
+    if (err) {
+      console.log(result)
+      throw err;
+    }
+    console.log(result);
+  }); 
+};
+
+
+
+
+
+//CREATE QUERY/TABLE TEMPLATES
+exports.table = (object) => {
+  const templateValues = {
+    tableTitle: object.table || '',
+    selected: object.fields || [],
+    filters: object.filters || '',
+    functions: object.functions || [],
+    joins: ` JOIN ${object.joinTable} ON ${object.joinOn[0]} = ${object.joinOn[1]}` || '',
+    limit: object.limit || ''
+  };
+  return templateValues;
+};
+
+
+//QUERY BUILDER METHODS
+let mappedObjects = [];
 let queryValues = {
   tableTitle: '',
   selected: [],
@@ -60,20 +206,21 @@ let queryValues = {
   functions: [],
   joins: '',
   limit: ''
-}
-
+};
 
 exports.get = (selectedTable) => {
+  if (!selectedTable.title) {
+    queryValues = {...selectedTable};
+    return this;
+  }
   mapObject(selectedTable);
   queryValues.tableTitle = `${selectedTable.title}`;
   return this;
-}
+};
 
-//BASIC QUERIES
 exports.select = (fields) => {
   let selectedFields;
   if (queryValues.functions.length > 0) {
-    console.log(queryValues.functions)
     selectedFields = queryValues.functions;
     if (selectedFields.length > 1) {
       selectedFields = selectedFields.map(fld => fld).join(', ')
@@ -85,7 +232,6 @@ exports.select = (fields) => {
     selectedFields = `*`
   }
   queryValues.selected.push(`${selectedFields}`);
-  console.log(selectedFields)
   return this;
 }
 
@@ -111,10 +257,8 @@ exports.join = (table, on) => {
   let joinTableValue = `${table.title}.${on.on[1]}`;
   let mainTableValueExists = checkValueInDb(mainTableValue);
   let joinTableValueExists = checkValueInDb(joinTableValue);
-  console.log(mainTableValueExists, joinTableValueExists)
   if (mainTableValueExists && joinTableValueExists > -1) {
     queryValues.joins = ` JOIN ${table.title} ON ${mainTableValue} = ${joinTableValue}`
-    console.log(queryValues.joins)
     return this
   } else {
     console.log('value does not exist in database')
@@ -122,10 +266,37 @@ exports.join = (table, on) => {
 }
 
 exports.filter = (selected) => {
-  const filters = createWhereQueries([selected]);
+  if (queryValues.filters !== '') {
+    queryValues.filters = ''
+  }
+  const filters = createWhereQueries(selected);
   queryValues.filters += filters;
   return this;
-}
+};
+
+//FOR VUE
+exports.tableFilter = (selected) => {
+  if (queryValues.filters !== '') {
+    queryValues.filters = ''
+  };
+
+  function createWhereQueries(selected) {
+    console.log('createWhereQueriesTable')
+    let filters = ''
+    for (let i = 0; i < selected.length; i++) {
+      if (i === 0) {
+        filters += ` WHERE ${selected[i].field} = '${selected[i].value}'`
+      } else {
+        filters += ` AND ${selected[i].field} = '${selected[i].value}'`
+      }
+    };
+    return filters
+  };
+  
+  const filters = createWhereQueries(selected);
+  queryValues.filters += filters;
+  return this;
+};
 
 exports.sort = (selectedObject) => {
   const selected = objectify(selectedObject);
@@ -137,13 +308,12 @@ exports.sort = (selectedObject) => {
 exports.groupBy = (selected) => {
   this.groupings = ` GROUP BY ${selected}`
   return this
-}
+};
 
 exports.limit = (num) => {
   queryValues.limit = ` LIMIT ${num}`
   return this
-}
-
+};
 
 //AGGREGATE FUNCTIONS
 exports.concat = (...args) => {
@@ -175,14 +345,16 @@ exports.count = (str) => {
 
 
 
-//LOCAL FUNCTIONS
+//HELPER FUNCTIONS
 function objectify(selected) {
   return Array.isArray(selected) ?
   objectifyArray(selected):
-  objectifyObjectMap(selected)
+  objectifyArray([selected])
 }
 
+//obsolete??
 function objectifyObjectMap(selectedObject) {
+  console.log('objectifyObjectMap')
   const selected = {};
     for (const [key, name] of Object.entries(selectedObject)) {
       selected.field = `${key}`;
@@ -192,7 +364,9 @@ function objectifyObjectMap(selectedObject) {
 }
 
 function objectifyArray(selectedObjectArray) {
+  console.log('objectifyArray')
   const selected = [];
+  console.log(selectedObjectArray)
   selectedObjectArray.forEach(selectedObject => {
     for (const [key, name] of Object.entries(selectedObject)) {
       let field = `${key}`;
@@ -201,6 +375,19 @@ function objectifyArray(selectedObjectArray) {
     };
   });
   return selected
+}
+
+function createWhereQueries(selectedObjectArray) {
+  let filters = ''
+  const selected = objectify(selectedObjectArray);
+  for (let i = 0; i < selected.length; i++) {
+    if (i === 0) {
+      filters += ` WHERE ${selected[i].field} = '${selected[i].value}'`
+    } else {
+      filters += ` AND ${selected[i].field} = '${selected[i].value}'`
+    }
+  };
+  return filters
 }
 
 function stringifyKeys(object) {
@@ -218,7 +405,7 @@ function getKeyValuePair(value) {
     for (let i = 0; i < dbTables.length; i++) {
       let keyValuePair = `${dbTables[i].title}.${value}`
       if (Object.values(dbTables[i]).indexOf(keyValuePair) > -1) {
-        console.log(keyValuePair)
+        // console.log(keyValuePair)
         return keyValuePair
       };
     };
@@ -233,7 +420,6 @@ function getKeyValuePair(value) {
 }
 
 function checkValueInDb(value) {
-// console.log(mappedObjects)
   let booleans = []
   for (let i = 0; i < mappedObjects.length; i++) {
     if (Object.values(mappedObjects[i]).indexOf(value) > -1) {
@@ -253,18 +439,7 @@ function sanitiseArray(selected) {
   }
 }
 
-function createWhereQueries(selectedObjectArray) {
-  let filters = ''
-  const selected = objectify(selectedObjectArray);
-  for (let i = 0; i < selected.length; i++) {
-    if (i === 0) {
-      filters += ` WHERE ${selected[i].field} = '${selected[i].value}'`
-    } else {
-      filters += ` AND ${selected[i].field} = '${selected[i].value}'`
-    }
-  };
-  return filters
-}
+
 
 function createSetQueries(object) {
   let sets = []
@@ -304,43 +479,6 @@ function resetQueryValues() {
     joins: '',
     limit: ''
   }
-}
-
-//DB QUERIES
-exports.query = function(res) {
-  const queryString = buildQuery();
-  console.log(queryString)
-  db.query(queryString, (err, result) => { 
-     if (err) throw err;
-     res.send(result);
-  });
-  resetQueryValues();
-}
-
-
-exports.retrieve = async function() {
-  let queryString = buildQuery();
-  console.log(queryString);
-  let array = [];
-  
-  function getResults() {
-    return new Promise((resolve, reject) => {
-      db.query(queryString, (err, results) => { 
-        if (err) throw reject(err);
-        results.forEach(result => {
-          let object = {}
-          for (const [key, value] of Object.entries(result)) {
-            object[key] = `${value}`
-          };
-          array.push(object)
-        });
-        resolve(results)
-      });
-    });
-  };
-  resetQueryValues();
-  await getResults();
-  return array;
 }
 
 
@@ -410,26 +548,21 @@ exports.filterComplex = {
     let selectedValueArray = selected.value.split(',')
     const condition = `${selected.field} BETWEEN ${selectedValueArray[0]} AND ${selectedValueArray[1]}`;
     conditions.push(condition);
-    console.log(conditions)
     return this
   },
 
   or() {
     const conjunction = 'OR';
     conjunctions.push(conjunction)
-    console.log(conjunctions)
     return this
   },
   and() {
     const conjunction = 'AND';
     conjunctions.push(conjunction)
-    // console.log(conjunctions)
     return this
   },
 
   set() {
-    console.log(conditions)
-    console.log(conjunctions)
     let filterQuery;
     for (let i = 0; i < conditions.length; i++) {
       if (i === 0) {
@@ -441,66 +574,4 @@ exports.filterComplex = {
     console.log(filterQuery)
   return filterQuery;
   }
-}
-
-
-//CRUD OPERATIONS
-exports.insert = (title, object) => {
-  let fields = []
-  let valueArraysToPush = []
-  let values = [];
-  let valueLength;
-
-  for (const [key, value] of Object.entries(object)) {
-    fields.push(`${key}`)
-    valueArraysToPush.push(value)
-    valueLength = value.length
-  }
-  if (typeof valueArraysToPush[0] === 'object') {
-    for (let i = 0; i < valueLength ; i++) {
-      let valueArrays = []
-       valueArraysToPush.forEach(value => {
-         if (value[i] === parseInt(value[i])) { 
-           console.log(value[i])
-           valueArrays.push(value[i])  
-         } else {
-           valueArrays.push(`${value[i]}`)
-         }
-       })
-      values.push(valueArrays)
-     }
-  } else {
-    let valArray = []
-    valueArraysToPush.forEach(valueArray => {
-      valArray.push(`${valueArray}`)
-    })
-    values.push(valArray)
-  }
-  fields = fields.join(', ')
-  console.log(values)
-  let sql = `INSERT INTO ${title.title} (${fields}) VALUES ?`
-  console.log(sql)
-  db.query(sql, [values], (err, result) => { 
-    if (err) {
-      console.log(result)
-      throw err;
-    }
-    console.log(result);
-  });
-}
-
-exports.update = (table, object) => {
-  const tableToUpdate = table.title;
-  const conditionsArray = sanitiseArray(object.where);
-  const valueConditions = createWhereQueries(conditionsArray);
-  const sets = createSetQueries(object.set);
-  const valuesToUpdate = sets.join(', ');
-  const sql = `UPDATE ${tableToUpdate} SET ${valuesToUpdate}${valueConditions}`;
-  db.query(sql, (err, result) => { 
-    if (err) {
-      console.log(result)
-      throw err;
-    }
-    console.log(result);
-  });
 };
