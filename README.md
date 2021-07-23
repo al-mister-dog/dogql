@@ -128,8 +128,151 @@ WHERE CustomerID = 1;
 
 ## Queries
 ### Get and Select
+The get method takes a table as an argument. This table must be specified within the controller.
+```javascript
+const employees = tables.employees
+dogql.get(employees)
+```
+Once the table has been specified you can select an entry or value from this table by adding the select method.
+The select method takes an array as an argument. The array will contain values from your table.
+```javascript
+dogql.get(employees)
+.select([employees.FirstName, employees.LastName])
+```
+```sql
+SELECT employees.FirstName, employees.LastName FROM employees
+```
+An empty argument will select all values from the table. This is the equivalent of the * wildcard in SQL
+```javascript
+dogql.get(employees)
+.select()
+```
+```sql 
+SELECT * FROM employees
+```
 
 ### Query and Retrieve
+```javascript
+const dogql = require('dogql-db');
+const tables = dogql.tables();
+
+// exports.getEmployees = (req, res, send) => {
+//   const employees = tables.employees
+//   dogql.get(employees)
+//   .select()
+//   .limit(2)
+//   .query(res)
+// }
+
+exports.getEmployees = async (req, res, send) => {
+  const employees = tables.employees;
+  console.log(employees)
+  const results = await dogql.get(employees)
+  .select()
+  .retrieve();
+  const employeeOne = results[0].LastName.toUpperCase();
+  res.send(employeeOne);
+};
+
+exports.filterEmployees = (req, res, next) => {
+  const employees = tables.employees
+  
+  dogql.get(employees)
+  .select([employees.LastName])
+  .filter({
+    title: "Sales Representative",
+    country: 'USA'
+  })
+  .query(res);
+}
+
+exports.selectAsFilter = (req, res, next) => {
+  const employees = tables.employees
+  dogql.get(employees)
+  .selectAs([
+  {"name": dogql.concat(employees.FirstName, '" "', employees.LastName)}, 
+  {"blurb": dogql.rename(employees.Notes)}
+  ])
+  .filter({
+    title: "Sales Representative",
+    country: 'USA'
+  })
+  .retrieve()
+  .then(result => {
+    res.send(result)
+  })
+}
+
+exports.sortById = (req, res, next) => {
+  const employees = tables.employees
+  dogql.get(employees)
+  .select()
+  .sort({EmployeeID: -1})
+  .query(res)
+}
+
+exports.numFuncs = (req, res, next) => {
+  const products = tables.products
+  dogql.get(products)
+  .select([dogql.sum(products.QuantityPerUnit), dogql.count(products.ProductID), dogql.avg(products.UnitsInStock)])
+  .query(res)
+}
+
+exports.nestedNumFuncs = (req, res, next) => {
+  const products = tables.products
+  
+  dogql.get(products)
+  .select([
+    dogql.sum(products.QuantityPerUnit), 
+    dogql.count(products.ProductID), 
+    dogql.avg(products.UnitsInStock)])
+  .query(res)
+}
+
+exports.filterComplex = (req, res, next) => {
+  const orders = tables.orders;
+
+  const conditions = dogql.filterComplex
+    .like({'CustomerID': 'V%'})
+    .and()
+    .between({'OrderID': [10806, 10850]})
+    .set();
+
+  dogql.get(orders)
+  .select([orders.ShipCountry])
+  .where(conditions)
+  .query(res);
+}
+
+exports.insertPlayers = (req, res, next) => {
+  const customers = tables.customers
+  dogql.insertMany(customers, {
+    CustomerId: '29389',
+    CompanyName: 'Cardinal',
+    ContactName: 'Tom B. Erichsen',
+    ContactTitle: 'Tom B. Erichsen',
+    Address: 'Skagen 21',
+    City: 'Stavanger',
+    Region: 'Stavanger',
+    PostalCode: '4006',
+    Country: 'Norway',
+    Phone: '000-111-111',
+    Fax:'111-333-222'
+  })
+}
+
+exports.update = (req, res, next) => {
+  const users = tables.users;
+
+  dogql.update(users, {
+    where: { id: 6 },
+    set: { 
+      email: 'almisterdog@gmail.com',
+      name: 'Alex Hunter Cool'
+    }
+  })
+}
+```
 
 ### Basic Queries
 #### Filter/Where
