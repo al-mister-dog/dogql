@@ -121,7 +121,7 @@ WHERE CustomerID = 1;
 #### Clear all Entries in Table
 #### Delete a Table
 
-### Models, Tables and Templates
+## Models, Tables and Templates
 #### Create Tables
 #### Work with Existing Tables
 #### Create Templates
