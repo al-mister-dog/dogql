@@ -27,7 +27,7 @@ npm i dogql-db
 ### Pre-existing Database and Setup
 Require dogql and set up the database driver using MySql options.
 ```javascript
-const dogql = require('dogql')
+const dogql = require('dogql-db')
 
 dogql.db({
   host: 'localhost',
@@ -38,7 +38,7 @@ dogql.db({
 ```
 Access database tables in your controller files.
 ```javascript
-const dogql = require('dogql');
+const dogql = require('dogql-db');
 const tables = dogql.tables();
 ```
 Access individual tables in your controller functions.
