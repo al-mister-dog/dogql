@@ -152,9 +152,51 @@ DROP TABLE customers
 #### Create Tables
 #### Work with Existing Tables
 #### Create Templates
-If you find your self making the same long-winded select statements (multiple fields, some joins, a filter etc) in your code, you can avoid repeating yourself by setting a template that you can use in your functions.
+If you find your self making the same long-winded select statements (multiple fields, some joins, a filter etc) in your code, you can avoid repeating yourself by setting a template that you can use in your functions. In a new file, perhaps in your models folder, require dogql and set a variable to the ```dogql.table()``` function.
+```javascript
+const dogql = require('dogql-db');
 
+const team = dogql.table();
+```
+This function takes an object in which to supply your table information. These are stored in key-value pairs. Available options are...
+```javascript
+table: 'table_name',
+joinTable: 'table_name',
+joinOn: ['an array that takes a value from each table that matches'], ['e.g an id and a foreign key'],
+fields: ['fields', 'you', 'want', 'to', 'include'],
+filters: 'WHERE RAW_SYNTAX = MUST_BE PROVIDED',
+orderBy: 'RAW_SYNTAX_AGAIN'
+functions: 'not yet integrated()',
+limit: 5 (a number basically),
+```
+Here is an example below
+```javascript
+const footballTeam = dogql.table({
+  table: 'players',
+  joinTable: 'teams',
+  joinOn: ['players.teamId', 'teams.id'],
+  fields: ['players.firstName', 'teams.teamName'],
+  filters: 'WHERE teams.id = 1'
+});
+```
+```sql
+SELECT players.firstName, teams.teamName FROM players
+JOIN teams ON players.teamId = teams.id
+WHERE teams.id = 1
+```
+Export ```footballTeam``` from its file and import into your controllers. Now you can simply use the get method to retrieve the table records specified by your template.
+```javascript
+const dogql = require('dogql-db');
+const footballTeam = require('../my-folder/myFile');
 
+exports.getFootballTeam = (req, res, next) => {
+  dogql.get(footballTeam).query(res)
+}
+```
+You can append methods to the template as long as they do not clash with the template.
+```javascript
+dogql.get(footballTeam).sort({value: -1})query(res)
+```
 ## Queries
 ### Get and Select
 The get method takes a table as an argument. This table must be specified within the controller.
