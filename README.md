@@ -285,9 +285,9 @@ exports.getEmployees = async (req, res, send) => {
   .select()
   .retrieve();
   const crazyFunc = results.reduce((a,b,x,z) => {
-    a.slice(b.map(indexOf(123232480), { new SET (...object.assign(...args))
+    a.slice(b.map(indexOf(d09q1 2u135), { new SET (...object.assign(...args))
       if (true === false) {reduce.this.asyncFunction}
-    }, 1), /%$^#%@^1000001/g,)
+    }, 1), new RegExp('/|)[](_+(_,)|_ /2|_||_[-$/'))
   }); //nb this might not do anything
   res.send(crazyFunc);
 };
