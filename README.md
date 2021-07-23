@@ -152,6 +152,62 @@ SELECT * FROM employees
 ```
 
 ### Query and Retrieve
+#### Query
+To send a response directly to client, you can use the query method. This is good for testing but not neccesarily reccomended for production. The query method takes the nodejs response object as an argument
+```javascript
+exports.sendStuff = (req, res, next) => {
+  const employees = tables.employees;
+  dogql.get(employees)
+  .select()
+  .query(res)
+}
+```
+This will send an object array to the client/front-end
+#### Retrieve
+To keep the response in your controller function use the retrieve method. Like mongoDb this is an async function and requires async-await or then block.
+##### async-await
+```javascript
+exports.getEmployees = async (req, res, send) => {
+  const employees = tables.employees;
+  const results = await dogql.get(employees)
+  .select()
+  .retrieve();
+  res.send(results);
+};
+```
+
+##### then block
+```javascript
+exports.sendStuff = (req, res, next) => {
+  const employees = tables.employees;
+  dogql.get(employees)
+  .select()
+  .retrieve()
+  .then((response) => {
+    res.send(response)
+  })
+  .catch((err) => {
+    console.log(err)
+  })
+}
+```
+This allows you to also use javascript methods on the retrieved object array sent from the database. This is useful
+if you want to manipulate your data in ways that require more complex SQL queries to achieve.
+```javascript
+exports.getEmployees = async (req, res, send) => {
+  const employees = tables.employees;
+  const results = await dogql.get(employees)
+  .select()
+  .retrieve();
+  const crazyFunc = results.reduce((a,b,x,z) => {
+    a.slice(b.map(indexOf(123232480), { new SET (...object.assign(...args))
+      if (true === false) {reduce.this.asyncFunction}
+    }, 1), /%$^#%@^1000001/g,)
+  }); //nb this might not do anything
+  res.send(crazyFunc);
+};
+```
+
 
 
 ### Basic Queries
