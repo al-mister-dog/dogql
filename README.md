@@ -82,7 +82,7 @@ exports.getEmployees = async (req, res, send) => {
 ## CRUD Operations
 ### Insert
 ```insert``` takes a table as the first argument and an object as the second argument. The object is populated with the values you wish to insert into your table. The key of the object must match the field names specified in the sql table.
-#### dogql
+##### dogql
 ```javascript
   const customers = tables.customers
   dogql.insert(customers, {
@@ -94,7 +94,7 @@ exports.getEmployees = async (req, res, send) => {
     Country: 'Norway',
   })
 ```
-#### sql
+##### sql
 ```sql
 INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Country)
 VALUES ('Cardinal', 'Tom B. Erichsen', 'Skagen 21', 'Stavanger', '4006', 'Norway');
@@ -102,14 +102,14 @@ VALUES ('Cardinal', 'Tom B. Erichsen', 'Skagen 21', 'Stavanger', '4006', 'Norway
 
 ### Update
 ```update``` takes a table as the first argument, and then an object. The object consists of two query objects, ```set``` and ```where```. ```set``` represents the values you want to update, and ```where``` specifies the table entry you wish to make your updates.
-#### dogql
+##### dogql
 ```javascript
 dogql.update(customers, {
   set: { ContactName: 'Alfred Schmidt', City: 'Frankfurt' },
   where: { CustomerId: 1 }
 })
 ```
-#### sql
+##### sql
 ```sql
 UPDATE Customers
 SET ContactName = 'Alfred Schmidt', City= 'Frankfurt'
@@ -118,13 +118,42 @@ WHERE CustomerID = 1;
 
 ### Delete
 #### Delete an Entry
+Specify the table in the first argument and describe the entry you want to delete in an object in the second argument.
+Such an object could include an id for example.
+##### dogql
+```javascript
+dogql.delete(customers, { CustomerName: 'Alfreds Futterkiste' })
+```
+##### sql
+```sql
+DELETE FROM Customers WHERE CustomerName = 'Alfreds Futterkiste'
+```
 #### Clear all Entries in Table
+Specify the table in the argument and clear your table out. The table structure, attributes, and indexes will remain intact.
+##### dogql
+```javascript
+dogql.clearTable(customers)
+```
+##### sql
+```sql
+DELETE FROM TABLE customers
+```
 #### Delete a Table
+Take your rage out on your entire table and delete it completely using ```deleteTable()```
+```javascript
+dogql.deleteTable(customers)
+```
+##### sql
+```sql
+DROP TABLE customers
+```
 
 ## Models, Tables and Templates
 #### Create Tables
 #### Work with Existing Tables
 #### Create Templates
+If you find your self making the same long-winded select statements (multiple fields, some joins, a filter etc) in your code, you can avoid repeating yourself by setting a template that you can use in your functions.
+
 
 ## Queries
 ### Get and Select
