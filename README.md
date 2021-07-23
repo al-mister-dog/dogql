@@ -21,7 +21,7 @@ VALUES ('Cardinal', 'Tom B. Erichsen', 'Skagen 21', 'Stavanger', '4006', 'Norway
 ```
 ## Installation
 ```
-npm i dogql
+npm i dogql-db
 ```
 ## Usage
 ### Pre-existing Database and Setup
@@ -33,7 +33,7 @@ dogql.db({
   host: 'localhost',
   user: 'root',
   password: 'password',
-  database: 'northwind', 
+  database: 'database', 
 })
 ```
 Access database tables in your controller files.
@@ -115,3 +115,31 @@ UPDATE Customers
 SET ContactName = 'Alfred Schmidt', City= 'Frankfurt'
 WHERE CustomerID = 1;
 ```
+
+### Delete
+#### Delete an Entry
+#### Clear all Entries in Table
+#### Delete a Table
+
+### Models, Tables and Templates
+#### Create Tables
+#### Work with Existing Tables
+#### Create Templates
+
+## Queries
+### Get and Select
+
+### Query and Retrieve
+
+### Basic Queries
+#### Filter/Where
+#### Sort/Order By
+#### Group By
+#### Pagination/Limit
+
+### Joins
+
+### Complex Queries
+#### Nested Functions
+#### Complex Filters
+
