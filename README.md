@@ -193,6 +193,20 @@ exports.getFootballTeam = (req, res, next) => {
   dogql.get(footballTeam).query(res)
 }
 ```
+Calling this function would provide the following results
+```
+[
+  {
+    "firstName": "Bernd",
+    "teamName": "Arsenal"
+  },
+  {
+    "firstName": "Hector",
+    "teamName": "Arsenal"
+  },
+...etc, etc
+]
+```
 You can append methods to the template as long as they do not clash with the template.
 ```javascript
 dogql.get(footballTeam).sort({value: -1})query(res)
