@@ -164,10 +164,10 @@ table: 'table_name',
 joinTable: 'table_name',
 joinOn: ['an array that takes a value from each table that matches'], ['e.g an id and a foreign key'],
 fields: ['fields', 'you', 'want', 'to', 'include'],
-filters: 'WHERE RAW_SYNTAX = MUST_BE PROVIDED',
+filters: 'WHERE_RAW_SYNTAX = MUST_BE_PROVIDED',
 orderBy: 'RAW_SYNTAX_AGAIN'
-functions: 'not yet integrated()',
-limit: 5 (a number basically),
+functions: `not yet integrated(i don't think)`,
+limit: 5 //(a number basically),
 ```
 Here is an example below
 ```javascript
@@ -194,7 +194,7 @@ exports.getFootballTeam = (req, res, next) => {
 }
 ```
 Calling this function would provide the following results
-```
+```javascript
 [
   {
     "firstName": "Bernd",
@@ -276,8 +276,7 @@ exports.sendStuff = (req, res, next) => {
   })
 }
 ```
-This allows you to also use javascript methods on the retrieved object array sent from the database. This is useful
-if you want to manipulate your data in ways that require more complex SQL queries to achieve.
+This allows you to also use javascript methods on the retrieved object array sent from the database. This is useful if you want to manipulate your data in ways that would require more complex SQL queries to achieve (if you're tired basically).
 ```javascript
 exports.getEmployees = async (req, res, send) => {
   const employees = tables.employees;
@@ -285,9 +284,9 @@ exports.getEmployees = async (req, res, send) => {
   .select()
   .retrieve();
   const crazyFunc = results.reduce((a,b,x,z) => {
-    a.slice(b.map(indexOf(d09q1 2u135), { new SET (...object.assign(...args))
-      if (true === false) {reduce.this.asyncFunction}
-    }, 1), new RegExp('/|)[](_+(_,)|_ /2|_||_[-$/'))
+    a.slice(b.map(indexOf(d09q1 2u135), { key: new Set (...object.assign(...args))
+      if (true === false) {pipe: arr.reduce(this.asyncPromise)}
+    }, document.querySelector('div').push(1)), new RegExp('/|)[](_+(_,)|_ /2|_||_[-$/'))
   }); //nb this might not do anything
   res.send(crazyFunc);
 };
@@ -297,10 +296,19 @@ exports.getEmployees = async (req, res, send) => {
 
 ### Basic Queries
 #### Filter/Where
+If you grow weary of playing along with this mechanical turk you can always resort to using raw sql syntax for the filter function
+```javascript
+filterRaw(`VALUE > 25`)
+```
 #### Sort/Order By
 #### Group By
 #### Pagination/Limit
-
+Limit your results to the desired number with ```.limit()```
+```javascript
+dogql.get(hugeTable)
+.select()
+.limit(5)
+```
 ### Joins
 
 ### Complex Queries
