@@ -331,7 +331,78 @@ exports.getEmployees = async (req, res, send) => {
 
 ### Basic Queries
 #### Filter/Where
-If you grow weary of playing along with this mechanical turk you can always resort to using raw sql syntax for the filter function
+##### find
+The simplest filter method is ```.find()```
+This is an equality operator and works like the find method in mongoDb, in which the field matches the value.
+```javascript
+.find({id: 1})
+```
+This method is chained to your function after setting up the get and select functions.
+```javascript
+const employees = tables.employees
+dogql.get(employees)
+.select([employees.LastName, employees.FirstName, employees.Title, employees.City])
+.find({title: "Sales Representative"})
+.query(res);
+```
+```sql
+SELECT LastName, FirstName, Title, City FROM employees WHERE title = 'Sales Representative'
+```
+This would render the following...
+```javascript
+[
+  {
+    "LastName": "Davolio",
+    "FirstName": "Nancy",
+    "Title": "Sales Representative",
+    "City": "Seattle"
+  },
+  {
+    "LastName": "Leverling",
+    "FirstName": "Janet",
+    "Title": "Sales Representative",
+    "City": "Kirkland"
+  }
+  ...etc, etc
+]
+```
+To add more equality operators just add more properties to your find object
+```javascript
+.find({
+  title: "Sales Representative",
+  country: 'USA'
+})
+```
+It should go without saying that the strings can be replaced with variables of your choice
+```javascript
+.find({
+  id: req.body.id
+})
+```
+##### tableFilter
+The ```tableFilter()``` method is similar to the ```find()``` method, except they may be easier to work with certain types of fetched data, especially when the field name is unknown by the server. For example
+```javascript
+await fetch('http://mywebsite/page', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          field: 'employeeId',
+          value: this.value
+        })
+      })
+```
+This would be be received by the server as ```[{field: 'employeeId, value: 23}]```
+Back in node, you would deal with this in the following way
+```javascript
+///...
+.tableFilter()
+```
+##### filter
+To include more complex filters see the complex filters section below.
+##### filterRaw
+If you grow weary of pretending you are really working with objects you can always resort to using raw sql syntax for the filter function
 ```javascript
 filterRaw(`VALUE > 25`)
 ```
