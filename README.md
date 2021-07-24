@@ -149,8 +149,43 @@ DROP TABLE customers
 ```
 
 ## Models, Tables and Templates
-#### Create Tables
+#### Create Table Models
+You can create sql tables in dogql and use them as models in your application. They are similar to Schemas in mongoose. In a file (perhaps in your models folder), require dogql-db and use the `dogql.create()` function.
+```javascript
+const dogql = require('dogql-db');
+const myTable = dogql.create();
+```
+This function takes an object to add your fields and data types.
+```javascript
+const myTable = dogql.create({
+  id: dogql.id,
+  name: dogql.string,
+});
+```
+Common data types include the following
+```sql
+dogql.string = 'VARCHAR(255)'
+dogql.number = 'INT'
+dogql.id = 'INT NOT NULL PRIMARY KEY'
+dogql.autoId = 'INT NOT NULL PRIMARY KEY AUTO_INCREMENT'
+dogql.date = `DATE`
+dogql.timeStamp = `TIMESTAMP`
+```
+Export your table from your file and import wherever you want.
 #### Work with Existing Tables
+If you have your database driver set up (see set up above), then accessing table variables is easy. In your controller folder require dogql-db and set a variable to ```dogql.tables()```
+```javascript
+const dogql = require('dogql-db');
+const tables = dogql.tables();
+```
+These are only accesible in your controllers, and individual tables and values are accessed using object dot notation.
+```javascript
+exports.myController = (req, res, next) => {
+const employees = tables.employees;
+const employeeId = employees.id;
+}
+
+```
 #### Create Templates
 If you find your self making the same long-winded select statements (multiple fields, some joins, a filter etc) in your code, you can avoid repeating yourself by setting a template that you can use in your functions. In a new file, perhaps in your models folder, require dogql and set a variable to the ```dogql.table()``` function.
 ```javascript
@@ -160,14 +195,14 @@ const team = dogql.table();
 ```
 This function takes an object in which to supply your table information. These are stored in key-value pairs. Available options are...
 ```javascript
-table: 'table_name',
-joinTable: 'table_name',
-joinOn: ['an array that takes a value from each table that matches'], ['e.g an id and a foreign key'],
-fields: ['fields', 'you', 'want', 'to', 'include'],
-filters: 'WHERE_RAW_SYNTAX = MUST_BE_PROVIDED',
-orderBy: 'RAW_SYNTAX_AGAIN'
-functions: `not yet integrated(i don't think)`,
-limit: 5 //(a number basically),
+table: //string
+joinTable: //string
+joinOn: //array containing matching fields e.g ['t1.t2id', 't2.id']
+fields: //array containing fields e.g ['id', 'name']
+filters: //string containing sql syntax,
+orderBy: //string containing sql syntax,
+functions: //not yet integrated(i don't think),
+limit: //number
 ```
 Here is an example below
 ```javascript
