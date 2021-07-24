@@ -397,7 +397,7 @@ This would be be received by the server as ```[{field: 'employeeId, value: 23}]`
 Back in node, you would deal with this in the following way
 ```javascript
 ///...
-.tableFilter()
+.tableFilter({field: req.body.field, value: req.body.value})
 ```
 ##### filter
 To include more complex filters see the complex filters section below.
