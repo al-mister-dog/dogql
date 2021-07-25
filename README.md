@@ -428,7 +428,6 @@ If the desired order is coming from the request use a ternary operator to determ
 ```javascript
 .sort({[freight]: order ? 1 : -1})
 ```
-#### Group By
 #### Pagination/Limit
 Limit your results to the desired number with ```.limit()```
 ```javascript
@@ -467,6 +466,32 @@ SELECT players.firstName, teams.teamName FROM players
 JOIN teams ON players.teamID = teams.id
 ```
 ### Complex Queries
+#### Select As
+Rename fields with the ```.selectAs()``` method
+
 #### Nested Functions
+
+#### Group By
+The GROUP BY statement is often used with aggregate functions (COUNT(), MAX(), MIN(), SUM(), AVG()) to group the result-set by one or more columns.
+
+Here is an example showing the amount of customers per country.
+```javascript
+const customers = tables.customers
+  dogql.get(customers)
+  .select([customers.Country, dogql.count(customers.CustomerID)])
+  .groupBy(customers.Country)
+  .query(res)
+//result
+[
+  {
+    "COUNT(CustomerID)": 2,
+    "Country": "Norway"
+  },
+  {
+    "COUNT(CustomerID)": 11,
+    "Country": "Germany"
+  },
+  ...etc
+```
 #### Complex Filters
 
