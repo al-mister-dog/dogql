@@ -437,7 +437,35 @@ dogql.get(hugeTable)
 .limit(5)
 ```
 ### Joins
+To make joins use the ```.join()``` method after specifying the ```get``` and ```select``` parameters.
+Join takes two arguments, the table to join, and the conditions for joining the tables.
+```javascript
+.join(anotherTable, {conditions})
+```
+The conditions are an equality operator, expressed as an array, consisting of two fields that match e.g a foreign key and a primary key from another table. 
+```javascript
+  .join(anotherTable, {
+    on: [firstTable.anotherTableId, anotherTable.id]
+  })
+```
+Here is an example
+```javascript
+exports.join = (req, res, next) => {
+  const players = tables.players;
+  const teams = tables.teams;
 
+  dogql.get(players)
+  .select([players.firstName, teams.teamName])
+  .join(teams, {
+    on: [players.teamId, teams.id]
+  })
+  .query(res);
+};
+```
+```sql
+SELECT players.firstName, teams.teamName FROM players 
+JOIN teams ON players.teamID = teams.id
+```
 ### Complex Queries
 #### Nested Functions
 #### Complex Filters
