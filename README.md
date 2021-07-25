@@ -407,6 +407,27 @@ If you grow weary of pretending you are really working with objects you can alwa
 filterRaw(`VALUE > 25`)
 ```
 #### Sort/Order By
+The ```.sort()``` method takes an object as an argument. The object takes a field and order as a key value pair. Use 1 for ascending order and -1 for descending order.
+```javascript
+  .sort({[freight]: 1})
+```
+Add the key as a variable to access the correct value...
+```javascript
+  const orders = tables.orders;
+  const freight = orders.Freight;
+  
+  dogql.get(orders)
+  .select([orders.OrderID, orders.Freight])
+  .sort({[freight]: 1})
+  .query(res)
+```
+```sql
+SELECT OrderId, Freight FROM orders ORDER BY Freight ASC
+```
+If the desired order is coming from the request use a ternary operator to determine the order.
+```javascript
+.sort({[freight]: order ? 1 : -1})
+```
 #### Group By
 #### Pagination/Limit
 Limit your results to the desired number with ```.limit()```
