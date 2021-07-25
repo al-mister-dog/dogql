@@ -530,9 +530,59 @@ const customers = tables.customers
   ...etc
 ```
 #### Complex Filters
-Dogql contains all SQL filtering methods (WHERE statements). This is done by 
+Dogql contains all SQL filtering methods (WHERE statements). This is done through chaining methods from the ```dogql``` object.
+You are better off using the ```filterRaw``` method here, but I thought it would be a nice challenge to come up with a system for this, and its no more or less convoluted looking as some of the mongoose queries I've seen for these kinds of queries. For simplicity of language it doesn't really get better than pure SQL!
 
+Firstly the ```filter``` method is actually an object so there are no parentheses appended.
+```javascript
+dogql.filter.like({'CustomerID': 'V%'})
+```
+For longer queries you will be using the AND or OR statements. These must be added also
+```javascript
+dogql.filter
+  .like({'CustomerID': 'V%'})
+  .and()
+  .between({'OrderID': [10806, 10850]})
+  ///
+dogql.filter
+  .like({'CustomerID': 'V%'})
+  .or()
+  .between({'OrderID': [10806, 10850]})
+```
+Once you have finished your filter statement, you end proceedings with ```set```
+```javascript
+dogql.filter
+  .like({'CustomerID': 'V%'})
+  .and()
+  .between({'OrderID': [10806, 10850]})
+  .set();
+```
+After this you must include it in the ```where``` method. Here are two examples
+```javascript
+//Example One
+const orders = tables.orders;
+const conditions = dogql.filter
+  .like({'CustomerID': 'V%'})
+  .and()
+  .between({'OrderID': [10806, 10850]})
+  .set();
 
+dogql.get(orders)
+.select([orders.ShipCountry])
+.where(conditions)
+.query(res);
 
-
-
+// Example Two
+dogql.get(orders)
+  .select([orders.ShipCountry])
+  .where(
+    dogql.filter
+    .like({'CustomerID': 'V%'})
+    .and()
+    .between({'OrderID': [10806, 10850]})
+    .set()
+```
+```sql
+SELECT * FROM orders WHERE CustomerID LIKE 'V%' AND OrderID BETWEEN 10806 AND 10850
+```
+<!-- Comparing that sql statement with the above methods shows there must be better ways to do Object Relational Models! Hopefuly in the future I can happilly delete this sentence! -->
