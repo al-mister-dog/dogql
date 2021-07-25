@@ -467,10 +467,46 @@ JOIN teams ON players.teamID = teams.id
 ```
 ### Complex Queries
 #### Select As
-Rename fields with the ```.selectAs()``` method
+Rename fields with the ```.selectAs()``` method.
+Like ```.select()```, this method takes an array as an argument.
+Each array element is an object who's key is the new alias, and the value is the field you want to rename. Fields that aren't the result of aggregated functions must be placed in the ```.rename()``` method
+```javascript
+dogql.get(customers)
+.selectAs([{"Customer": dogql.rename(customers.CustomerName)}])
+```
+```sql
+SELECT CustomerName AS Customer
+FROM Customers
+```
+Another common function is the SQL concat function, which enables you to concatenate strings and values.
+```javascript
+dogql.get(employees)
+  .selectAs([
+  {"name": dogql.concat(employees.FirstName, '" "', employees.LastName)}, 
+  {"blurb": dogql.rename(employees.Notes)}
+  ])
+```
 
-#### Nested Functions
+#### Aggregate Functions
+dogql contains aggregate functions, just like in SQL (COUNT(), MAX(), MIN(), SUM(), AVG()) etc. 
+To learn how to use these functions checkout any decent SQL tutorial. In dogql they are to be included in the ```select``` method.
+```javascript
+  dogql.get(products)
+  .select([
+    dogql.sum(products.QuantityPerUnit), 
+    dogql.count(products.ProductID), 
+    dogql.avg(products.UnitsInStock)])
+  .query(res)
 
+//result
+[
+  {
+    "SUM(QuantityPerUnit)": 3381,
+    "COUNT(ProductID)": 77,
+    "AVG(UnitsInStock)": "40.5065"
+  }
+]
+```
 #### Group By
 The GROUP BY statement is often used with aggregate functions (COUNT(), MAX(), MIN(), SUM(), AVG()) to group the result-set by one or more columns.
 
@@ -494,4 +530,9 @@ const customers = tables.customers
   ...etc
 ```
 #### Complex Filters
+Dogql contains all SQL filtering methods (WHERE statements). This is done by 
+
+
+
+
 
