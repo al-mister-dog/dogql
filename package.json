@@ -4,7 +4,8 @@
   "description": "orm for mysql",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --watch",
+    "start": "nodemon app"
   },
   "author": "Alex Hunter",
   "license": "ISC",
