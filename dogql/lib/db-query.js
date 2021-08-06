@@ -2,10 +2,11 @@ const qb = require('./query-builder')
 
 exports.query = function(res, db) {
   const queryString = qb.buildQuery();
-  console.log(queryString)
   db.query(queryString, (err, result) => { 
      if (err) throw err;
-     res.send(result);
+     const response = {result, queryString};
+     console.log(response)
+     res.send(response);
   });
   qb.resetQueryValues();
 }
@@ -32,5 +33,6 @@ exports.retrieve = async function(db) {
   };
   qb.resetQueryValues();
   await getResults();
-  return array;
+  const response = {array, queryString};
+  return response;
 }

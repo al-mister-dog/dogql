@@ -11,7 +11,7 @@ dogql.db({
   database: "northwind",
 });
 
-const routes = require("./routes");
+const routes = require("./routes/index");
 app.use("/", routes);
 
 module.exports = app;
