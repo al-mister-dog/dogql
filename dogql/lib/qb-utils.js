@@ -1,7 +1,6 @@
 exports.createWhereQueries = (selectedObjectArray) => {
   let filters = ''
   const selected = objectifyFilter(selectedObjectArray);
-  console.log(selected.length)
   for (let i = 0; i < selected.length; i++) {
     if (i === 0) {
       filters += ` WHERE ${selected[i].field} = '${selected[i].value}'`
@@ -31,18 +30,15 @@ function objectifyFilter(selected) {
 }
 
 function objectifyObjectMap(selectedObject) {
-  console.log('objectifyObjectMap')
   const selected = {};
     for (const [key, name] of Object.entries(selectedObject)) {
       selected.field = `${key}`;
       selected.value = `${name}`;
     };
-    console.log(selected)
   return selected
 }
 
 function objectifyArray(selectedObjectArray) {
-  console.log('objectifyArray')
   const selected = [];
   selectedObjectArray.forEach(selectedObject => {
     for (const [key, name] of Object.entries(selectedObject)) {

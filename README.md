@@ -342,7 +342,7 @@ This method is chained to your function after setting up the get and select func
 const employees = tables.employees
 dogql.get(employees)
 .select([employees.LastName, employees.FirstName, employees.Title, employees.City])
-.find({title: "Sales Representative"})
+.find({Title: "Sales Representative"})
 .query(res);
 ```
 ```sql

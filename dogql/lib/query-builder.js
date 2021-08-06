@@ -1,23 +1,22 @@
-const utils = require('./qb-utils')
+const utils = require("./qb-utils");
 
 let mappedObjects = [];
 
 let queryValues = {
-  tableTitle: '',
+  tableTitle: "",
   selected: [],
-  filters: '',
+  filters: "",
   functions: [],
-  orders: '',
-  joins: '',
-  limit: '',
-  groupings: ''
+  orders: "",
+  joins: "",
+  limit: "",
+  groupings: "",
 };
-
 
 //SET TABLES: GET FOR MAIN TABLE, JOIN FOR JOIN TABLE
 exports.get = (selectedTable) => {
   if (!selectedTable.title) {
-    queryValues = {...selectedTable};
+    queryValues = { ...selectedTable };
     return this;
   }
   mapObject(selectedTable);
@@ -27,78 +26,85 @@ exports.get = (selectedTable) => {
 
 exports.join = (table, on) => {
   mapObject(table);
-  let mainTableValue = `${queryValues.tableTitle}.${on.on[0]}`;
-  let joinTableValue = `${table.title}.${on.on[1]}`;
-  let mainTableValueExists = utils.checkValueInDb(mainTableValue, mappedObjects);
-  let joinTableValueExists = utils.checkValueInDb(joinTableValue, mappedObjects);
+  const mainTableValue = `${queryValues.tableTitle}.${on.on[0]}`;
+  const joinTableValue = `${table.title}.${on.on[1]}`;
+  const mainTableValueExists = utils.checkValueInDb(
+    mainTableValue,
+    mappedObjects
+  );
+  const joinTableValueExists = utils.checkValueInDb(
+    joinTableValue,
+    mappedObjects
+  );
   if (mainTableValueExists && joinTableValueExists > -1) {
-    queryValues.joins = ` JOIN ${table.title} ON ${mainTableValue} = ${joinTableValue}`
-    return this
+    queryValues.joins = ` JOIN ${table.title} ON ${mainTableValue} = ${joinTableValue}`;
+    return this;
   } else {
-    console.log('value does not exist in database')
-  } 
-}
-
-function mapObject(selectedTable) {
-  mappedObjects.push(selectedTable)
+    console.log("value does not exist in database");
+  }
 };
 
+function mapObject(selectedTable) {
+  mappedObjects.push(selectedTable);
+}
 
 //QUERIES
 exports.select = (fields) => {
+  console.log(fields);
   let selectedFields;
   // if fields are empty
   if (!Array.isArray(fields)) {
-    selectedFields = `*`
+    selectedFields = `*`;
     queryValues.selected.push(`${selectedFields}`);
     return this;
-  };
-  
-  let selectedFunctions
+  }
+
+  let selectedFunctions;
   // if queryValues.functions contains values
   if (queryValues.functions.length > 0) {
     selectedFunctions = queryValues.functions;
     //if queryValues.functions has more than one value
-    if (selectedFunctions.length > 1) { 
-      selectedFunctions = selectedFunctions.map(fld => fld).join(', ')
+    if (selectedFunctions.length > 1) {
+      selectedFunctions = selectedFunctions.map((fld) => fld).join(", ");
     }
     queryValues.functions = [];
-    queryValues.selected.push(`${selectedFunctions}`); 
-    console.log(queryValues.selected)
-  }; 
-  
+    queryValues.selected.push(`${selectedFunctions}`);
+    console.log(queryValues.selected);
+  }
+
   //if fields is an array
   if (Array.isArray(fields)) {
-    const definedValues = fields.filter(field => field !== undefined)
+    const definedValues = fields.filter((field) => field !== undefined);
     //if array is now empty
     if (definedValues.length === 0) {
-      return this
+      return this;
     }
-    selectedFields = definedValues.map(fld => fld).join(', ')
+    selectedFields = definedValues.map((fld) => fld).join(", ");
     queryValues.selected.push(`${selectedFields}`);
-    return this
-  }; 
+    return this;
+  }
 };
 
 exports.selectAs = (selected) => {
+  console.log(selected)
   let aliases = utils.sanitiseArray(selected);
   let aliasArray = [];
-  aliases.forEach(alias => {
+  aliases.forEach((alias) => {
     const aliasToPush = utils.stringifyKeys(alias);
-    aliasArray.push(` AS '${aliasToPush}'`)
+    aliasArray.push(` AS '${aliasToPush}'`);
   });
   for (let i = 0; i < aliasArray.length; i++) {
-    aliasArray[i] = `${queryValues.functions[i]}${aliasArray[i]}`
-  };
-  let aliasQueries = aliasArray.join(', ');
+    aliasArray[i] = `${queryValues.functions[i]}${aliasArray[i]}`;
+  }
+  let aliasQueries = aliasArray.join(", ");
   queryValues.selected.push(aliasQueries);
   queryValues.functions = [];
-  return this
- };
+  return this;
+};
 
 exports.find = (selected) => {
-  if (queryValues.filters !== '') {
-    queryValues.filters = ''
+  if (queryValues.filters !== "") {
+    queryValues.filters = "";
   }
   const filters = utils.createWhereQueries(selected);
   queryValues.filters += filters;
@@ -106,46 +112,48 @@ exports.find = (selected) => {
 };
 
 exports.tableFilter = (selected) => {
-  if (queryValues.filters !== '') {
-    queryValues.filters = ''
-  };
-  // const createWhereQueries = (selected) => {
-    // console.log('createWhereQueriesTable')
-    let filters = ''
-    for (let i = 0; i < selected.length; i++) {
-      if (i === 0) {
-        filters += ` WHERE ${selected[i].field} = '${selected[i].value}'`
-      } else {
-        filters += ` AND ${selected[i].field} = '${selected[i].value}'`
-      }
-    };
-  //   return filters
-  // };
-  // const filters = createWhereQueries(selected);
+  if (queryValues.filters !== "") {
+    queryValues.filters = "";
+  }
+  let filters = "";
+  for (let i = 0; i < selected.length; i++) {
+    if (i === 0) {
+      filters += ` WHERE ${selected[i].field} = '${selected[i].value}'`;
+    } else {
+      filters += ` AND ${selected[i].field} = '${selected[i].value}'`;
+    }
+  }
   queryValues.filters += filters;
   return this;
 };
 
 exports.where = (selected) => {
   queryValues.filters += selected;
-  return this;  
-}
+  return this;
+};
+
+exports.filterRaw = (selected) => {
+  queryValues.filters += ` WHERE ${selected}`;
+  return this;
+};
 
 exports.sort = (selectedObject) => {
   const selected = utils.objectifySort(selectedObject);
-  const directions = {"1": 'ASC', "-1": 'DESC'};
-  queryValues.orders = ` ORDER BY ${selected.field} ${directions[selected.value]}`;
+  const directions = { 1: "ASC", "-1": "DESC" };
+  queryValues.orders = ` ORDER BY ${selected.field} ${
+    directions[selected.value]
+  }`;
   return this;
 };
 
 exports.groupBy = (selected) => {
-  queryValues.groupings = ` GROUP BY ${selected}`
-  return this
+  queryValues.groupings = ` GROUP BY ${selected}`;
+  return this;
 };
 
 exports.limit = (num) => {
-  queryValues.limit = ` LIMIT ${num}`
-  return this
+  queryValues.limit = ` LIMIT ${num}`;
+  return this;
 };
 
 exports.rename = (name, dbTables) => {
@@ -155,156 +163,161 @@ exports.rename = (name, dbTables) => {
 
 exports.concat = (...args) => {
   let arr = [...args];
-  let concat = `CONCAT(${arr.map(x => x).join()})`;
+  let concat = `CONCAT(${arr.map((x) => x).join()})`;
   queryValues.functions.push(concat);
-}
+};
 
 exports.sum = (str) => {
-  queryValues.functions.push(`SUM(${str})`)
-}
+  queryValues.functions.push(`SUM(${str})`);
+};
 
 exports.avg = (str) => {
-  queryValues.functions.push(`AVG(${str})`)
-}
+  queryValues.functions.push(`AVG(${str})`);
+};
 
 exports.count = (str) => {
-  console.log(str)
-  queryValues.functions.push(`COUNT(${str})`)
-}
+  queryValues.functions.push(`COUNT(${str})`);
+};
+
+exports.string = (str) => {
+  queryValues.functions.push(str);
+};
 
 exports.createSetQueries = (object) => {
-  let sets = []
+  let sets = [];
   for (const [key, value] of Object.entries(object)) {
-    sets.push(`${key} = '${value}'`)
+    sets.push(`${key} = '${value}'`);
   }
-  return sets
-}
+  return sets;
+};
 
 exports.buildQuery = () => {
-  let selected = queryValues.selected.join(', ');
+  let selected = queryValues.selected.join(", ");
   const selectedValues = {
-    tableTitle: queryValues.tableTitle || '',
-    filters: queryValues.filters || '',
-    functions: queryValues.functions || '',
-    orders: queryValues.orders || '',
-    joins: queryValues.joins || '',
-    limit: queryValues.limit || '',
-    groupings: queryValues.groupings || '',
+    tableTitle: queryValues.tableTitle || "",
+    filters: queryValues.filters || "",
+    functions: queryValues.functions || "",
+    orders: queryValues.orders || "",
+    joins: queryValues.joins || "",
+    limit: queryValues.limit || "",
+    groupings: queryValues.groupings || "",
   };
   const queryString = `SELECT ${selected} FROM ${selectedValues.tableTitle}${selectedValues.joins}${selectedValues.filters}${selectedValues.orders}${selectedValues.groupings}${selectedValues.limit}`;
   return queryString;
-}
+};
 
 let conditions = [];
 let conjunctions = [];
 exports.filter = {
   like(cndtn) {
     const selected = utils.objectify(cndtn);
-    const condition = `${selected.field} LIKE '${selected.value}'`
-    conditions.push(condition)
-    return this
+    const condition = `${selected.field} LIKE '${selected.value}'`;
+    conditions.push(condition);
+    return this;
   },
   equal(cndtn) {
     const selected = utils.objectify(cndtn);
     const condition = `${selected.field} = ${selected.value}`;
     conditions.push(condition);
-    return this
+    return this;
   },
   notEqual(cndtn) {
     const selected = utils.objectify(cndtn);
     const condition = `${selected.field} <> ${selected.value}`;
     conditions.push(condition);
-    return this
+    return this;
   },
   in(cndtn) {
     const selected = utils.objectify(cndtn);
     const condition = `${selected.field} IN (${selected.value})`;
     conditions.push(condition);
-    return this
+    return this;
   },
   notIn(cndtn) {
     const selected = utils.objectify(cndtn);
     const condition = `NOT ${selected.field} IN ${selected.value}`;
     conditions.push(condition);
-    return this
+    return this;
   },
   gtn(cndtn) {
     const selected = utils.objectify(cndtn);
     const condition = `${selected.field} > ${selected.value}`;
     conditions.push(condition);
-    return this
+    return this;
   },
   gtnEqual(cndtn) {
     const selected = utils.objectify(cndtn);
     const condition = `${selected.field} >= ${selected.value}`;
     conditions.push(condition);
-    return this
+    return this;
   },
   ltn(cndtn) {
     const selected = utils.objectify(cndtn);
     const condition = `${selected.field} < ${selected.value}`;
     conditions.push(condition);
-    return this
+    return this;
   },
   ltnEqual(cndtn) {
     const selected = utils.objectify(cndtn);
     const condition = `${selected.field} <= ${selected.value}`;
     conditions.push(condition);
-    return this
+    return this;
   },
   between(cndtn) {
     const selected = utils.objectify(cndtn);
-    let selectedValueArray = selected.value.split(',')
+    let selectedValueArray = selected.value.split(",");
     const condition = `${selected.field} BETWEEN ${selectedValueArray[0]} AND ${selectedValueArray[1]}`;
     conditions.push(condition);
-    return this
+    return this;
   },
 
   or() {
-    const conjunction = 'OR';
-    conjunctions.push(conjunction)
-    return this
+    const conjunction = "OR";
+    conjunctions.push(conjunction);
+    return this;
   },
   and() {
-    const conjunction = 'AND';
-    conjunctions.push(conjunction)
-    return this
+    const conjunction = "AND";
+    conjunctions.push(conjunction);
+    return this;
   },
 
   set() {
     let filterQuery;
     for (let i = 0; i < conditions.length; i++) {
       if (i === 0) {
-        filterQuery = ` WHERE ${conditions[0]}`
+        filterQuery = ` WHERE ${conditions[0]}`;
       } else {
-        filterQuery += ` ${conjunctions[i -1]} ${conditions[i]}`
+        filterQuery += ` ${conjunctions[i - 1]} ${conditions[i]}`;
       }
-    };
+    }
     conditions = [];
     conjunctions = [];
     return filterQuery;
-  }
+  },
 };
 
 exports.resetQueryValues = () => {
   queryValues = {
-    tableTitle: '',
+    tableTitle: "",
     selected: [],
-    filters: '',
+    filters: "",
     functions: [],
-    joins: '',
-    limit: ''
-  }
-}
+    joins: "",
+    limit: "",
+  };
+};
 
 exports.template = (object) => {
   const templateValues = {
-    tableTitle: object.table || '',
+    tableTitle: object.table || "",
     selected: object.fields || [],
-    filters: object.filters || '',
+    filters: object.filters || "",
     functions: object.functions || [],
-    joins: ` JOIN ${object.joinTable} ON ${object.joinOn[0]} = ${object.joinOn[1]}` || '',
-    limit: object.limit || ''
+    joins:
+      ` JOIN ${object.joinTable} ON ${object.joinOn[0]} = ${object.joinOn[1]}` ||
+      "",
+    limit: object.limit || "",
   };
   return templateValues;
 };
