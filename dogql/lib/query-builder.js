@@ -50,7 +50,7 @@ function mapObject(selectedTable) {
 
 //QUERIES
 exports.select = (fields) => {
-  console.log(fields);
+  // console.log(fields);
   let selectedFields;
   // if fields are empty
   if (!Array.isArray(fields)) {
@@ -69,7 +69,6 @@ exports.select = (fields) => {
     }
     queryValues.functions = [];
     queryValues.selected.push(`${selectedFunctions}`);
-    console.log(queryValues.selected);
   }
 
   //if fields is an array
@@ -86,7 +85,7 @@ exports.select = (fields) => {
 };
 
 exports.selectAs = (selected) => {
-  console.log(selected)
+  // console.log(selected)
   let aliases = utils.sanitiseArray(selected);
   let aliasArray = [];
   aliases.forEach((alias) => {

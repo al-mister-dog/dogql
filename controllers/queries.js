@@ -147,7 +147,7 @@ exports.selectSelectAs = async (req, res, next) => {
     .selectAs([{ "Company Name": dogql.rename(customers.CompanyName) }])
     .retrieve();
   res.send(response);
-}
+};
 
 exports.selectAsStringFunction = async (req, res, next) => {
   const employees = tables.employees;
@@ -158,5 +158,50 @@ exports.selectAsStringFunction = async (req, res, next) => {
     .select([employees.EmployeeID])
     .selectAs([{ overseas: dogql.string("Country <> 'USA'") }])
     .retrieve();
+  res.send(response);
+};
+
+exports.count = async (req, res, next) => {
+  const products = tables.products;
+  const response = await dogql
+    .get(products)
+    .select([dogql.count(products.ProductID)])
+    .retrieve();
+  res.send(response);
+};
+exports.sum = async (req, res, next) => {
+  const order_details = tables.order_details;
+  const response = await dogql
+    .get(order_details)
+    .select([dogql.sum(order_details.Quantity)])
+    .retrieve();
+  res.send(response);
+};
+exports.avg = async (req, res, next) => {
+  const products = tables.products;
+  const response = await dogql
+    .get(products)
+    .select([dogql.avg(products.UnitPrice)])
+    .retrieve();
+  res.send(response);
+};
+exports.concat = async (req, res, next) => {
+  const employees = tables.employees;
+  const response = await dogql
+    .get(employees)
+    .selectAs([
+      { name: dogql.concat(employees.FirstName, '" "', employees.LastName) },
+    ])
+    .retrieve();
+  res.send(response);
+};
+exports.sumCountAvg = async (req, res, next) => {
+  const products = tables.products
+  const response = await dogql.get(products)
+  .select([
+    dogql.sum(products.QuantityPerUnit), 
+    dogql.count(products.ProductID), 
+    dogql.avg(products.UnitsInStock)])
+  .retrieve();
   res.send(response);
 };

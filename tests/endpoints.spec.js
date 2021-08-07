@@ -4,10 +4,10 @@ const request = supertest(app);
 const dogql = require("../dogql");
 beforeAll(() => {
   dogql.db({
-    host: "localhost",
-    user: "root",
-    password: "Coltrane67",
-    database: "northwind",
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
   });
 });
 
@@ -253,6 +253,81 @@ describe("select-as queries", () => {
     const queryString = response.body.queryString;
     expect(queryString).toBe(
       "SELECT EmployeeID, Country <> 'USA' AS 'overseas' FROM employees"
+    );
+  });
+});
+
+describe("function queries", () => {
+  it("completes a count query", async () => {
+    const response = await request.get("/count");
+    const results = response.body.array[0];
+    expect(results).toEqual({
+      "COUNT(ProductID)": "77",
+    });
+  });
+  it("sends the correct count SQL query", async () => {
+    const response = await request.get("/count");
+    const queryString = response.body.queryString;
+    expect(queryString).toBe("SELECT COUNT(ProductID) FROM products");
+  });
+
+  it("completes a sum query", async () => {
+    const response = await request.get("/sum");
+    const results = response.body.array[0];
+    expect(results).toEqual({
+      "SUM(Quantity)": "51317",
+    });
+  });
+  it("sends the correct sum SQL query", async () => {
+    const response = await request.get("/sum");
+    const queryString = response.body.queryString;
+    expect(queryString).toBe("SELECT SUM(Quantity) FROM order_details");
+  });
+
+  it("completes an avg query", async () => {
+    const response = await request.get("/avg");
+    const results = response.body.array[0];
+    expect(results).toEqual({
+      "AVG(UnitPrice)": "28.86636363636364",
+    });
+  });
+  it("sends the correct avg SQL query", async () => {
+    const response = await request.get("/avg");
+    const queryString = response.body.queryString;
+    expect(queryString).toBe("SELECT AVG(UnitPrice) FROM products");
+  });
+
+  it("completes a concat query", async () => {
+    const response = await request.get("/concat");
+    const results = response.body.array[0];
+    expect(results).toEqual({
+      name: "Nancy Davolio",
+    });
+  });
+  it("sends the correct concat SQL query", async () => {
+    const response = await request.get("/concat");
+    const queryString = response.body.queryString;
+    expect(queryString).toBe(
+      `SELECT CONCAT(FirstName," ",LastName) AS 'name' FROM employees`
+    );
+  });
+});
+
+describe("multiple function queries", () => {
+  it("completes a count, sum, avg query", async () => {
+    const response = await request.get("/sum-count-avg");
+    const results = response.body.array[0];
+    expect(results).toEqual({
+      "SUM(QuantityPerUnit)": "3381",
+      "COUNT(ProductID)": "77",
+      "AVG(UnitsInStock)": "40.5065",
+    });
+  });
+  it("sends the correct count, sum avg SQL query", async () => {
+    const response = await request.get("/sum-count-avg");
+    const queryString = response.body.queryString;
+    expect(queryString).toBe(
+      "SELECT SUM(QuantityPerUnit), COUNT(ProductID), AVG(UnitsInStock) FROM products"
     );
   });
 });

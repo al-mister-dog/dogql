@@ -26,5 +26,12 @@ router.get("/join-table", queries.joinTable);
 
 router.get("/select-as", queries.selectAs);
 router.get("/select-select-as", queries.selectSelectAs);
-router.get("/select-as-string-function", queries.selectAsStringFunction)
+router.get("/select-as-string-function", queries.selectAsStringFunction);
+
+router.get("/count", queries.count);
+router.get("/sum", queries.sum);
+router.get("/avg", queries.avg);
+router.get("/concat", queries.concat);
+router.get("/sum-count-avg", queries.sumCountAvg);
+
 module.exports = router;
