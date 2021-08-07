@@ -2,14 +2,61 @@ const supertest = require("supertest");
 const app = require("../app");
 const request = supertest(app);
 const dogql = require("../dogql");
+const mysql = require("mysql2");
+
 beforeAll(() => {
-  dogql.db({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-  });
+  // dogql.db({
+  //   host: process.env.DB_HOST,
+  //   user: process.env.DB_USER,
+  //   password: process.env.DB_PASSWORD,
+  //   database: process.env.DB_NAME,
+  // });
 });
+
+// function getTables() {
+//   let dbTables = {};
+//   const db = mysql.createConnection({
+//     host: process.env.DB_HOST,
+//     user: process.env.DB_USER,
+//     password: process.env.DB_PASSWORD,
+//     database: process.env.DB_NAME,
+//   });
+
+//   db.connect((err) => {
+//     if (err) {
+//       console.log("error at line 10 database.js");
+//     }
+//     console.log("mysql in tests up and running!");
+//   });
+//   return new Promise((resolve, reject) => {
+//     db.query("SHOW TABLES", (err, databaseTables) => {
+//       if (err) throw err;
+//       let count = 0;
+//       for (let i = 0; i < databaseTables.length; i++) {
+//         for (const [tableInDatabase, tableName] of Object.entries(
+//           databaseTables[i]
+//         )) {
+//           dbTables[tableName] = { title: tableName };
+//           db.query(`DESC ${tableName}`, (err, results) => {
+//             if (err) throw err;
+//             results.forEach((table) => {
+//               dbTables[tableName][table.Field] = table.Field;
+//               dbTables[tableName][
+//                 table.Field + "KeyVal"
+//               ] = `${tableName}.${table.Field}`;
+//             });
+//             count++;
+//             if (count === 12) {
+//               resolve(dbTables);
+//             }
+//           });
+//         }
+//       }
+//     });
+//   });
+// }
+
+// getTables();
 
 describe("basic connection tests", () => {
   it("works in jest", async () => {
@@ -328,6 +375,24 @@ describe("multiple function queries", () => {
     const queryString = response.body.queryString;
     expect(queryString).toBe(
       "SELECT SUM(QuantityPerUnit), COUNT(ProductID), AVG(UnitsInStock) FROM products"
+    );
+  });
+});
+
+describe("group-by functions", () => {
+  it("completes a group-by query", async () => {
+    const response = await request.get("/group-by");
+    const results = response.body.array[0];
+    expect(results).toEqual({
+      "COUNT(CustomerID)": "2",
+      Country: "Norway",
+    });
+  });
+  it("sends the correct group-by query", async () => {
+    const response = await request.get("/group-by");
+    const queryString = response.body.queryString;
+    expect(queryString).toBe(
+      "SELECT COUNT(CustomerID), Country FROM customers GROUP BY Country"
     );
   });
 });

@@ -13,9 +13,8 @@ exports.query = function(res, db) {
 
 exports.retrieve = async function(db) {
   let queryString = qb.buildQuery();
-  // console.log(queryString)
   let array = [];
-  
+  console.log(queryString)
   function getResults() {
     return new Promise((resolve, reject) => {
       db.query(queryString, (err, results) => { 

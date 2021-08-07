@@ -163,6 +163,10 @@ exports.count = (str) => {
 
 exports.string = (str) => {
   qb.string(str);
-}
+};
 
 exports.filter = qb.filter;
+
+exports.nest = () => {
+  return qb.nest();
+};

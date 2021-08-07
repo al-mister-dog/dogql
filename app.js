@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const dogql = require("./dogql");
+const tables = require("./tables")
 require('dotenv').config()
 app.use(express.json());
 

@@ -196,12 +196,69 @@ exports.concat = async (req, res, next) => {
   res.send(response);
 };
 exports.sumCountAvg = async (req, res, next) => {
-  const products = tables.products
-  const response = await dogql.get(products)
-  .select([
-    dogql.sum(products.QuantityPerUnit), 
-    dogql.count(products.ProductID), 
-    dogql.avg(products.UnitsInStock)])
-  .retrieve();
+  const products = tables.products;
+  const response = await dogql
+    .get(products)
+    .select([
+      dogql.sum(products.QuantityPerUnit),
+      dogql.count(products.ProductID),
+      dogql.avg(products.UnitsInStock),
+    ])
+    .retrieve();
   res.send(response);
 };
+exports.groupBy = async (req, res, next) => {
+  const customers = tables.customers;
+  const response = await dogql
+    .get(customers)
+    .select([customers.Country, dogql.count(customers.CustomerID)])
+    .groupBy(customers.Country)
+    .retrieve();
+  res.send(response);
+};
+exports.filter = async (req, res, next) => {
+  const orders = tables.orders;
+  const conditions = dogql.filter
+    .like({ CustomerID: "V%" })
+    .and()
+    .between({ OrderID: [10806, 10850] })
+    .set();
+
+  const response = await dogql
+    .get(orders)
+    .select([orders.ShipCountry, orders.OrderID])
+    .where(conditions)
+    .retrieve();
+
+  res.send(response);
+};
+exports.in = async (req, res, next) => {
+  const customers = tables.customers;
+  const response = await dogql
+    .get(customers)
+    .select()
+    .where(dogql.filter.in({ country: ["Germany", "France", "UK"] }).set())
+    .retrieve();
+  res.send(response);
+};
+exports.notIn = async (req, res, next) => {
+  const customers = tables.customers;
+  const response = await dogql
+    .get(customers)
+    .select()
+    .where(dogql.filter.notIn({ country: ["Germany", "France", "UK"] }).set())
+    .retrieve();
+  res.send(response);
+};
+exports.selecto = async (req, res, next) => {
+  const customers = tables.customers;
+  const suppliers = tables.suppliers;
+  const response = await dogql
+    .get(customers)
+    .select([customers.CompanyName, customers.Country])
+    .where(dogql.filter.in({ country: dogql.get(suppliers).select([suppliers.Country]).nest() }).set())
+    .retrieve();
+  res.send(response);
+}
+
+// SELECT CompanyName, Country FROM Customers WHERE Country IN (SELECT Country FROM Suppliers)

@@ -227,14 +227,33 @@ exports.filter = {
     return this;
   },
   in(cndtn) {
+    console.log(cndtn)
     const selected = utils.objectify(cndtn);
+    console.log(cndtn)
+    if (selected.value.includes(",")) {
+      selected.value = selected.value
+        .split(",")
+        .map((val) => `'${val}'`)
+        .join(",");
+    } else {
+      selected.value = `'${selected.value}'`;
+    }
     const condition = `${selected.field} IN (${selected.value})`;
     conditions.push(condition);
     return this;
   },
   notIn(cndtn) {
+    console.log(cndtn)
     const selected = utils.objectify(cndtn);
-    const condition = `NOT ${selected.field} IN ${selected.value}`;
+    if (selected.value.includes(",")) {
+      selected.value = selected.value
+        .split(",")
+        .map((val) => `'${val}'`)
+        .join(",");
+    } else {
+      selected.value = `'${selected.value}'`;
+    }
+    const condition = `${selected.field} NOT IN (${selected.value})`;
     conditions.push(condition);
     return this;
   },
@@ -320,3 +339,8 @@ exports.template = (object) => {
   };
   return templateValues;
 };
+
+exports.nest = () => {
+  let queryString = this.buildQuery() 
+  return queryString;
+}
