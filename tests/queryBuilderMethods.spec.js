@@ -685,6 +685,85 @@ describe("filter-object methods", () => {
     });
   });
 
+  it("uses greater-than", async () => {
+    const tables = await getTables();
+    const employees = tables.employees;
+    const conditions = dogql.filter.gtn({ EmployeeID: "8" }).set();
+    const response = await dogql
+      .get(employees)
+      .select([employees.EmployeeID])
+      .where(conditions)
+      .retrieve();
+
+    const results = response.array[0];
+    expect(results.EmployeeID).toBe("9");
+  });
+  it("uses less-than", async () => {
+    const tables = await getTables();
+    const employees = tables.employees;
+    const conditions = dogql.filter.ltn({ EmployeeID: "2" }).set();
+    const response = await dogql
+      .get(employees)
+      .select([employees.EmployeeID])
+      .where(conditions)
+      .retrieve();
+
+    const results = response.array[0];
+    expect(results.EmployeeID).toBe("1");
+  });
+  it("uses less-than-equal", async () => {
+    const tables = await getTables();
+    const employees = tables.employees;
+    const conditions = dogql.filter.ltnEqual({ EmployeeID: "2" }).set();
+    const response = await dogql
+      .get(employees)
+      .select([employees.EmployeeID])
+      .where(conditions)
+      .retrieve();
+
+    const results = response.array[1];
+    expect(results.EmployeeID).toBe("2");
+  });
+  it("uses greater-than-equal", async () => {
+    const tables = await getTables();
+    const employees = tables.employees;
+    const conditions = dogql.filter.gtnEqual({ EmployeeID: "8" }).set();
+    const response = await dogql
+      .get(employees)
+      .select([employees.EmployeeID])
+      .where(conditions)
+      .retrieve();
+
+    const results = response.array[0];
+    expect(results.EmployeeID).toBe("8");
+  });
+  it("uses equal", async () => {
+    const tables = await getTables();
+    const employees = tables.employees;
+    const conditions = dogql.filter.equal({ EmployeeID: "1" }).set();
+    const response = await dogql
+      .get(employees)
+      .select([employees.EmployeeID])
+      .where(conditions)
+      .retrieve();
+
+    const results = response.array[0];
+    expect(results.EmployeeID).toBe("1");
+  });
+  it("uses not-equal", async () => {
+    const tables = await getTables();
+    const employees = tables.employees;
+    const conditions = dogql.filter.notEqual({ EmployeeID: "1" }).set();
+    const response = await dogql
+      .get(employees)
+      .select([employees.EmployeeID])
+      .where(conditions)
+      .retrieve();
+
+    const results = response.array[0];
+    expect(results.EmployeeID).toBe("2");
+  });
+
   it("uses 'in'", async () => {
     const tables = await getTables();
     const customers = tables.customers;
@@ -695,7 +774,7 @@ describe("filter-object methods", () => {
       .retrieve();
     const results = response.array;
     expect(results[0].CustomerID).toBe("ALFAA");
-  })
+  });
   it("sends the correct 'in' query", async () => {
     const tables = await getTables();
     const customers = tables.customers;
@@ -705,9 +784,27 @@ describe("filter-object methods", () => {
       .where(dogql.filter.in({ country: ["Germany", "France", "UK"] }).set())
       .retrieve();
     const queryString = response.queryString;
-    expect(queryString).toBe("SELECT * FROM customers WHERE country IN ('Germany','France','UK')")
-  })
+    expect(queryString).toBe(
+      "SELECT * FROM customers WHERE country IN ('Germany','France','UK')"
+    );
+  });
 
+  it("uses 'or", async () => {
+    const tables = await getTables();
+    const customers = tables.customers;
+    const conditions = dogql.filter
+      .equal({ City: "Berlin" })
+      .or()
+      .equal({ City: "München" })
+      .set();
+    const response = await dogql
+      .get(customers)
+      .select([customers.City])
+      .where(conditions)
+      .retrieve();
+    const array = response.array;
+    expect(array).toEqual([{City: "Berlin"}, {City: "München"}]);
+  });
   it("uses 'not in'", async () => {
     const tables = await getTables();
     const customers = tables.customers;
@@ -718,8 +815,7 @@ describe("filter-object methods", () => {
       .retrieve();
     const results = response.array;
     expect(results[0].CustomerID).toBe("29389");
-  })
-
+  });
   it("sends the correct 'not in' query", async () => {
     const tables = await getTables();
     const customers = tables.customers;
@@ -729,6 +825,54 @@ describe("filter-object methods", () => {
       .where(dogql.filter.notIn({ country: ["Germany", "France", "UK"] }).set())
       .retrieve();
     const queryString = response.queryString;
-    expect(queryString).toBe("SELECT * FROM customers WHERE country NOT IN ('Germany','France','UK')")
-  })
+    expect(queryString).toBe(
+      "SELECT * FROM customers WHERE country NOT IN ('Germany','France','UK')"
+    );
+  });
+  //in not-in like and between
+  //gtn ltn gtn-equal ltn-equal equal not-equal or
+});
+
+describe("case functions", () => {
+  it("returns a case function", async () => {
+    const tables = await getTables();
+    const employees = tables.employees;
+    const response = await dogql
+      .get(employees)
+      .select([employees.EmployeeID])
+      .condition({
+        when: [
+          { "EmployeeID > 4": "The ID is greater than 4" },
+          { "EmployeeID = 4": "The ID is 4" },
+        ],
+        $else: "The ID is less than 4",
+        endAs: "ID_Number",
+      })
+      .retrieve();
+    const results = response.array[0];
+    expect(results).toEqual({
+      EmployeeID: "2",
+      ID_Number: "The ID is less than 4",
+    });
+  });
+  it("sends the correct case function SQL query", async () => {
+    const tables = await getTables();
+    const employees = tables.employees;
+    const response = await dogql
+      .get(employees)
+      .select([employees.EmployeeID])
+      .condition({
+        when: [
+          { "EmployeeID > 4": "The ID is greater than 4" },
+          { "EmployeeID = 4": "The ID is 4" },
+        ],
+        $else: "The ID is less than 4",
+        endAs: "ID_Number",
+      })
+      .retrieve();
+    const queryString = response.queryString;
+    expect(queryString).toBe(
+      "SELECT EmployeeID, CASE  WHEN EmployeeID > 4 THEN 'The ID is greater than 4' WHEN EmployeeID = 4 THEN 'The ID is 4' ELSE 'The ID is less than 4' END AS 'ID_Number' FROM employees"
+    );
+  });
 });

@@ -26,9 +26,10 @@ router.get("/avg", queries.avg);
 router.get("/concat", queries.concat);
 router.get("/sum-count-avg", queries.sumCountAvg);
 router.get("/group-by", queries.groupBy);
-router.get("/filter", queries.filter)
+router.get("/filter", queries.filter);
 router.get("/in", queries.in);
 router.get("/not-in", queries.notIn);
-
-router.get("/selecto", queries.selecto)
+router.get("/or", queries.or)
+router.get("/condition", queries.condition);
+router.get("/selecto", queries.selecto);
 module.exports = router;

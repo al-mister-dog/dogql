@@ -11,6 +11,7 @@ let queryValues = {
   joins: "",
   limit: "",
   groupings: "",
+  condition: "",
 };
 
 //SET TABLES: GET FOR MAIN TABLE, JOIN FOR JOIN TABLE
@@ -200,8 +201,9 @@ exports.buildQuery = () => {
     joins: queryValues.joins || "",
     limit: queryValues.limit || "",
     groupings: queryValues.groupings || "",
+    condition: queryValues.condition || "",
   };
-  const queryString = `SELECT ${selected} FROM ${selectedValues.tableTitle}${selectedValues.joins}${selectedValues.filters}${selectedValues.orders}${selectedValues.groupings}${selectedValues.limit}`;
+  const queryString = `SELECT ${selected} FROM ${selectedValues.tableTitle}${selectedValues.joins}${selectedValues.condition}${selectedValues.filters}${selectedValues.orders}${selectedValues.groupings}${selectedValues.limit}`;
   return queryString;
 };
 
@@ -216,20 +218,18 @@ exports.filter = {
   },
   equal(cndtn) {
     const selected = utils.objectify(cndtn);
-    const condition = `${selected.field} = ${selected.value}`;
+    const condition = `${selected.field} = '${selected.value}'`;
     conditions.push(condition);
     return this;
   },
   notEqual(cndtn) {
     const selected = utils.objectify(cndtn);
-    const condition = `${selected.field} <> ${selected.value}`;
+    const condition = `${selected.field} <> '${selected.value}'`;
     conditions.push(condition);
     return this;
   },
   in(cndtn) {
-    console.log(cndtn)
     const selected = utils.objectify(cndtn);
-    console.log(cndtn)
     if (selected.value.includes(",")) {
       selected.value = selected.value
         .split(",")
@@ -243,7 +243,6 @@ exports.filter = {
     return this;
   },
   notIn(cndtn) {
-    console.log(cndtn)
     const selected = utils.objectify(cndtn);
     if (selected.value.includes(",")) {
       selected.value = selected.value
@@ -259,32 +258,32 @@ exports.filter = {
   },
   gtn(cndtn) {
     const selected = utils.objectify(cndtn);
-    const condition = `${selected.field} > ${selected.value}`;
+    const condition = `${selected.field} > '${selected.value}'`;
     conditions.push(condition);
     return this;
   },
   gtnEqual(cndtn) {
     const selected = utils.objectify(cndtn);
-    const condition = `${selected.field} >= ${selected.value}`;
+    const condition = `${selected.field} >= '${selected.value}'`;
     conditions.push(condition);
     return this;
   },
   ltn(cndtn) {
     const selected = utils.objectify(cndtn);
-    const condition = `${selected.field} < ${selected.value}`;
+    const condition = `${selected.field} < '${selected.value}'`;
     conditions.push(condition);
     return this;
   },
   ltnEqual(cndtn) {
     const selected = utils.objectify(cndtn);
-    const condition = `${selected.field} <= ${selected.value}`;
+    const condition = `${selected.field} <= '${selected.value}'`;
     conditions.push(condition);
     return this;
   },
   between(cndtn) {
     const selected = utils.objectify(cndtn);
     let selectedValueArray = selected.value.split(",");
-    const condition = `${selected.field} BETWEEN ${selectedValueArray[0]} AND ${selectedValueArray[1]}`;
+    const condition = `${selected.field} BETWEEN '${selectedValueArray[0]}' AND '${selectedValueArray[1]}'`;
     conditions.push(condition);
     return this;
   },
@@ -321,8 +320,11 @@ exports.resetQueryValues = () => {
     selected: [],
     filters: "",
     functions: [],
+    orders: "",
     joins: "",
     limit: "",
+    groupings: "",
+    condition: "",
   };
 };
 
@@ -343,4 +345,19 @@ exports.template = (object) => {
 exports.nest = () => {
   let queryString = this.buildQuery() 
   return queryString;
+}
+
+exports.condition = (object) => {
+  const when = utils.objectify(object.when);
+  let whenArr = [];
+  for (let i = 0; i < when.length; i ++) {
+    whenArr.push(` WHEN ${when[i].field} THEN '${when[i].value}'`)
+  }
+  whenStr = whenArr.join('');
+
+  const $else = ` ELSE '${object.$else}' `;
+  const endAs = `END AS '${object.endAs}'`;
+  const condition = `CASE ${whenStr}${$else}${endAs}`;
+  queryValues.selected.push(condition);
+  return this
 }

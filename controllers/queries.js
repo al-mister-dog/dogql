@@ -250,6 +250,21 @@ exports.notIn = async (req, res, next) => {
     .retrieve();
   res.send(response);
 };
+
+exports.or = async (req, res, next) => {
+  const customers = tables.customers;
+  const conditions = dogql.filter
+    .equal({ City: "Berlin" })
+    .or()
+    .equal({ City: "München" })
+    .set();
+  const response = await dogql
+    .get(customers)
+    .select([customers.City])
+    .where(conditions)
+    .retrieve();
+  res.send(response)
+}
 exports.selecto = async (req, res, next) => {
   const customers = tables.customers;
   const suppliers = tables.suppliers;
@@ -260,5 +275,19 @@ exports.selecto = async (req, res, next) => {
     .retrieve();
   res.send(response);
 }
-
+exports.condition = async (req, res, next) => {
+  const employees = tables.employees;
+  console.log(employees)
+  const response = await dogql.get(employees).select([employees.EmployeeID])
+  .condition({
+    when: [
+      {"EmployeeID > 4": 'The ID is greater than 4'},
+      {"EmployeeID = 4": 'The ID is 4'},
+    ],
+    $else: 'The ID is less than 4',
+    endAs: 'ID_Number'
+  })
+  .retrieve();
+  res.send(response)
+}
 // SELECT CompanyName, Country FROM Customers WHERE Country IN (SELECT Country FROM Suppliers)

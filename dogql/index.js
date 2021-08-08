@@ -167,6 +167,10 @@ exports.string = (str) => {
 
 exports.filter = qb.filter;
 
+exports.condition = (object) => {
+  qb.condition(object);
+  return this;
+}
 exports.nest = () => {
   return qb.nest();
 };
