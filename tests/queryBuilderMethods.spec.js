@@ -1,9 +1,13 @@
-const supertest = require("supertest");
-const app = require("../app");
-const request = supertest(app);
+require('dotenv').config();
 const dogql = require("../dogql");
 const mysql = require("mysql2");
 
+dogql.db({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+})
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -829,8 +833,6 @@ describe("filter-object methods", () => {
       "SELECT * FROM customers WHERE country NOT IN ('Germany','France','UK')"
     );
   });
-  //in not-in like and between
-  //gtn ltn gtn-equal ltn-equal equal not-equal or
 });
 
 describe("case functions", () => {
