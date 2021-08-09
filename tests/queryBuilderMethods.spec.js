@@ -2,18 +2,15 @@ require("dotenv").config();
 const dogql = require("../dogql");
 const mysql = require("mysql2");
 
-dogql.db({
+const options = {
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-});
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+}
+
+dogql.db(options);
+const db = mysql.createConnection(options);
 
 function getTables() {
   let dbTables = {};
@@ -957,9 +954,4 @@ describe("crud operations", () => {
     const response = await dogql.deleteTable(users);
     expect(Object.keys(response)).toEqual(resultSetHeader);
   });
-  it("checks objects are equal", () => {
-    const obj1 = {bla: 'bla'};
-    const obj2 = {bla: 'bla'};
-    expect(obj1).toEqual(obj2)
-  })
 });

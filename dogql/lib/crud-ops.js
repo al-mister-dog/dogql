@@ -22,6 +22,14 @@ function getResults(sql, values) {
     });
   });
 }
+function getInsertResults(sql, values) {
+  return new Promise((resolve, reject) => {
+    db.query(sql, [values], (err, results) => {
+      if (err) throw reject(err);
+      resolve(results);
+    });
+  });
+}
 
 exports.insert = async (title, object) => {
   let fields = [];
@@ -55,17 +63,8 @@ exports.insert = async (title, object) => {
     values.push(valArray);
   }
   fields = fields.join(", ");
-  console.log(values);
-  function getResults(sql, values) {
-    return new Promise((resolve, reject) => {
-      db.query(sql, [values], (err, results) => {
-        if (err) throw reject(err);
-        resolve(results);
-      });
-    });
-  }
   let sql = `INSERT INTO ${title.title} (${fields}) VALUES ?`;
-  const response = await getResults(sql, values);
+  const response = await getInsertResults(sql, values);
   return response;
 };
 
@@ -85,20 +84,20 @@ exports.delete = async (table, object) => {
   const conditionsArray = utils.sanitiseArray(object);
   const valuesToDelete = utils.createWhereQueries(conditionsArray);
   const sql = `DELETE FROM ${tableToUpdate}${valuesToDelete}`;
-  const response = await getResults(sql)
-  return response
+  const response = await getResults(sql);
+  return response;
 };
 
 exports.clearTable = async (table) => {
   const tableToDelete = table.title;
   const sql = `DELETE FROM ${tableToDelete}`;
-  const response = await getResults(sql)
-  return response
+  const response = await getResults(sql);
+  return response;
 };
 
 exports.deleteTable = async (table) => {
   const tableToDelete = table.title;
   const sql = `DROP TABLE ${tableToDelete}`;
-  const response = await getResults(sql)
-  return response
+  const response = await getResults(sql);
+  return response;
 };
