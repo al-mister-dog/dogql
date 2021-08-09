@@ -65,23 +65,23 @@ exports.createTable = (object) => {
 
 //CRUD OPERATIONS
 exports.insert = (title, object) => {
-  crud.insert(title, object);
+  return crud.insert(title, object);
 };
 
 exports.update = (table, object) => {
-  crud.update(table, object);
+  return crud.update(table, object);
 };
 
 exports.delete = (table, object) => {
-  crud.delete(table, object);
+  return crud.delete(table, object);
 };
 
 exports.clearTable = (table) => {
-  crud.clearTable(table);
+  return crud.clearTable(table);
 };
 
 exports.deleteTable = (table) => {
-  crud.deleteTable(table);
+  return crud.deleteTable(table);
 };
 
 //QUERY BUILDER

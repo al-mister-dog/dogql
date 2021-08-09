@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 const dogql = require("../dogql");
 const mysql = require("mysql2");
 
@@ -7,7 +7,7 @@ dogql.db({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-})
+});
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -17,7 +17,6 @@ const db = mysql.createConnection({
 
 function getTables() {
   let dbTables = {};
-
   db.connect();
   return new Promise((resolve, reject) => {
     db.query("SHOW TABLES", (err, databaseTables) => {
@@ -46,6 +45,16 @@ function getTables() {
     });
   });
 }
+
+function deleteUsers() {
+  db.query("DELETE FROM users");
+}
+
+beforeAll(() => {
+  db.query(
+    `CREATE TABLE users (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), email VARCHAR(255), password VARCHAR(255))`
+  );
+});
 
 describe("basic connection tests", () => {
   it("utilises mysql function", async () => {
@@ -807,7 +816,7 @@ describe("filter-object methods", () => {
       .where(conditions)
       .retrieve();
     const array = response.array;
-    expect(array).toEqual([{City: "Berlin"}, {City: "München"}]);
+    expect(array).toEqual([{ City: "Berlin" }, { City: "München" }]);
   });
   it("uses 'not in'", async () => {
     const tables = await getTables();
@@ -877,4 +886,80 @@ describe("case functions", () => {
       "SELECT EmployeeID, CASE  WHEN EmployeeID > 4 THEN 'The ID is greater than 4' WHEN EmployeeID = 4 THEN 'The ID is 4' ELSE 'The ID is less than 4' END AS 'ID_Number' FROM employees"
     );
   });
+});
+
+describe("crud operations", () => {
+  const resultSetHeader = [
+    "fieldCount",
+    "affectedRows",
+    "insertId",
+    "info",
+    "serverStatus",
+    "warningStatus",
+  ];
+  it("inserts a user", async () => {
+    deleteUsers();
+    const tables = await getTables();
+    const users = tables.users;
+    const response = await dogql.insert(users, {
+      name: "alex",
+      email: "al@mail.com",
+      password: "abc",
+    });
+    expect(Object.keys(response)).toEqual(resultSetHeader);
+  });
+  it("updates a user", async () => {
+    const tables = await getTables();
+    const users = tables.users;
+    const userToInsert = {
+      name: "alex",
+      email: "al@mail.com",
+      password: "abc",
+    };
+    const userUpdates = {
+      name: "herbie",
+      email: "herbie@mail.com",
+      password: "123",
+    };
+
+    await dogql.insert(users, userToInsert);
+    const userResponse = await dogql.get(users).select().retrieve();
+    const user = userResponse.array[0];
+    const userId = user.id;
+
+    await dogql.update(users, {
+      set: userUpdates,
+      where: { name: "alex" },
+    });
+
+    const updatedUserResponse = await dogql.get(users).select().retrieve();
+    const updatedUser = updatedUserResponse.array[0];
+    const updatedUserId = updatedUser.id;
+    expect(userId).toBe(updatedUserId);
+    expect(user).not.toEqual(updatedUser);
+  });
+  it("deletes a user", async () => {
+    deleteUsers();
+    const tables = await getTables();
+    const users = tables.users;
+    const response = await dogql.delete(users, { name: "alex" });
+    expect(Object.keys(response)).toEqual(resultSetHeader);
+  });
+  it("deletes all entries in a table", async () => {
+    const tables = await getTables();
+    const users = tables.users;
+    const response = await dogql.clearTable(users);
+    expect(Object.keys(response)).toEqual(resultSetHeader);
+  });
+  it("deletes a table", async () => {
+    const tables = await getTables();
+    const users = tables.users;
+    const response = await dogql.deleteTable(users);
+    expect(Object.keys(response)).toEqual(resultSetHeader);
+  });
+  it("checks objects are equal", () => {
+    const obj1 = {bla: 'bla'};
+    const obj2 = {bla: 'bla'};
+    expect(obj1).toEqual(obj2)
+  })
 });
