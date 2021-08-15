@@ -8,7 +8,7 @@ exports.db = function (options) {
 
   db.connect((err) => {
     if (err) {
-      console.log("error at line 10 database.js");
+      console.log("keir starmer"); // TODO sort it out
     }
     console.log("crud accessed db!");
   });
