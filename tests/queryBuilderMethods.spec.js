@@ -996,3 +996,24 @@ describe("crud operations", () => {
     expect(Object.keys(response)).toEqual(resultSetHeader);
   });
 });
+describe('Create Table', () => {
+  fit('sends back an object', () => {
+    const table = dogql.createTable({
+      title: 'table', 
+      fields: {
+        id: dogql.id,
+        name: dogql.string,
+        age: dogql.number
+      }
+    });
+    expect(table).toEqual({
+      title: 'table',
+      id: 'id',
+      idKeyVal: 'table.id',
+      name: 'name',
+      nameKeyVal: 'table.name',
+      age: 'age',
+      ageKeyVal: 'table.age'
+    })
+  })
+})

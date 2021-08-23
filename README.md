@@ -100,6 +100,39 @@ INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Cou
 VALUES ('Cardinal', 'Tom B. Erichsen', 'Skagen 21', 'Stavanger', '4006', 'Norway');
 ```
 
+To insert multiple entries you can use the object or array method.
+
+array method
+```javascript
+dogql.insertMany(users, [
+      {
+        name: "alex",
+        email: "alex@mail.com",
+        password: "P4ssword",
+      },
+      {
+        name: "herbie",
+        email: "herbie@mail.com",
+        password: "P4ssword",
+      },
+      {
+        name: "emmma",
+        email: "emmma@mail.com",
+        password: "P4ssword",
+      },
+    ])
+```
+
+```javascript
+dogql.insert(users, 
+      {
+        name: ['alex', 'emma', 'herbie'],
+        email: ['al@mail.com', 'herbie@mail.com', 'emma@mail.com'],
+        password: ['P4ssword', 'P4ssword', 'P4ssword']
+      }
+    );
+```
+
 ### Update
 ```update``` takes a table as the first argument, and then an object. The object consists of two query objects, ```set``` and ```where```. ```set``` represents the values you want to update, and ```where``` specifies the table entry you wish to make your updates.
 ##### dogql

@@ -39,15 +39,6 @@ function getInsertResults(sql, values) {
   });
 }
 
-function getResultsFromString(sql) {
-  return new Promise((resolve, reject) => {
-    db.query(sql, (err, results) => {
-      if (err) throw reject(err);
-      resolve(results);
-    });
-  });
-}
-
 exports.insert = async (title, object) => {
   let fields = [];
   let valueArraysToPush = [];
