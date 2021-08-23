@@ -68,6 +68,10 @@ exports.insert = (title, object) => {
   return crud.insert(title, object);
 };
 
+exports.insertMany = (title, array) => {
+  return crud.insertMany(title, array)
+}
+
 exports.update = (table, object) => {
   return crud.update(table, object);
 };
@@ -174,3 +178,45 @@ exports.condition = (object) => {
 exports.nest = () => {
   return qb.nest();
 };
+
+//CREATE TABLE
+//data types
+exports.string = 'VARCHAR(255)'
+exports.number = 'INT'
+exports.id = 'INT NOT NULL PRIMARY KEY'
+exports.autoId = 'INT NOT NULL PRIMARY KEY AUTO_INCREMENT'
+exports.date = `DATE`
+exports.timeStamp = `TIMESTAMP`
+exports.image = `IMAGE`
+exports.boolean = `BOOL`
+exports.double = `DOUBLE`
+//constraints
+exports.notNull = `NOT NULL`
+exports.unique =`UNIQUE`
+exports.primaryKey = `PRIMARY KEY`
+exports.foreignKey = `FOREIGN KEY`
+exports.check = (conditions) => {
+  return `CHECK(${conditions})`
+}
+exports.default = (text) => {
+  return `DEFAULT ${text}`
+}
+
+//NUMERIC DATA TYPES
+//integer types
+exports.tinyInt = `TINYINT`
+exports.smallInt = `SMALLINT`
+exports.mediumInt = `MEDIUMINT	`
+exports.int = `INT	`
+exports.bigInt = `BIGINT`
+//float types
+exports.float = `FLOAT()`
+exports.decimal = `DECIMAL()`
+exports.double = `DOUBLE`
+
+//DATE AND TIME TYPES
+exports.date = `DATE`
+exports.datetime = `DATETIME()`
+exports.timestamp = `TIMESTAMP()`
+exports.time = `TIME()`
+exports.year = `YEAR`

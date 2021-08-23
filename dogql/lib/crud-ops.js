@@ -15,8 +15,16 @@ exports.db = function (options) {
 };
 
 function getResults(sql, values) {
+  if (values) {
+    return new Promise((resolve, reject) => {
+      db.query(sql, [values], (err, results) => {
+        if (err) throw reject(err);
+        resolve(results);
+      });
+    });
+  }
   return new Promise((resolve, reject) => {
-    db.query(sql, [values], (err, results) => {
+    db.query(sql, (err, results) => {
       if (err) throw reject(err);
       resolve(results);
     });
@@ -25,6 +33,15 @@ function getResults(sql, values) {
 function getInsertResults(sql, values) {
   return new Promise((resolve, reject) => {
     db.query(sql, [values], (err, results) => {
+      if (err) throw reject(err);
+      resolve(results);
+    });
+  });
+}
+
+function getResultsFromString(sql) {
+  return new Promise((resolve, reject) => {
+    db.query(sql, (err, results) => {
       if (err) throw reject(err);
       resolve(results);
     });
@@ -67,6 +84,23 @@ exports.insert = async (title, object) => {
   const response = await getInsertResults(sql, values);
   return response;
 };
+
+exports.insertMany = async (title, array) => {
+  let fields = [];
+  let values = [];
+  fields.push(Object.keys(array[0]));
+  array.forEach((object) => {
+    for (let [key, value] of Object.entries(object)) {
+      object[key] = `"${value}"`;
+    }
+    values.push(`(${Object.values(object)})`);
+  });
+  fields = fields.join(", ");
+  values = values.join();
+  const sql = `INSERT INTO ${title.title} (${fields}) VALUES ${values}`;
+  const response = await getResults(sql);
+  return response
+}
 
 exports.update = async (table, object) => {
   const tableToUpdate = table.title;

@@ -158,8 +158,12 @@ const myTable = dogql.create();
 This function takes an object to add your fields and data types.
 ```javascript
 const myTable = dogql.create({
-  id: dogql.id,
-  name: dogql.string,
+  title: 'my_table',
+  fields: {
+    id: dogql.id,
+    name: dogql.string,
+    age: dogql.number
+  }
 });
 ```
 Common data types include the following

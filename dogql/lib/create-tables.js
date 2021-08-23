@@ -1,4 +1,4 @@
-exports.create = (object, db) => {
+exports.createTable = (object, db) => {
   init(db);
   createNewMySqlTable(object, db);
   addInsertQueryToDogTable(object, db);

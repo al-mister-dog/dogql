@@ -48,12 +48,17 @@ function deleteUsers() {
 }
 
 beforeAll(() => {
+  db.query("DROP TABLE users")
+  db.query("DROP TABLE table")
   db.query(
     `CREATE TABLE users (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), email VARCHAR(255), password VARCHAR(255))`
   );
 });
 
 describe("basic connection tests", () => {
+  fit('bla', () => {
+    expect(1).toBe(1)
+  })
   it("utilises mysql function", async () => {
     const tables = await getTables();
     expect(tables.categories.title).toBe("categories");
@@ -905,6 +910,42 @@ describe("crud operations", () => {
     });
     expect(Object.keys(response)).toEqual(resultSetHeader);
   });
+  it("inserts multiple users", async () => {
+    deleteUsers();
+    const tables = await getTables();
+    const users = tables.users;
+    const response = await dogql.insert(users, 
+      {
+        name: ['alex', 'emma', 'herbie'],
+        email: ['al@mail.com', 'herbie@mail.com', 'emma@mail.com'],
+        password: ['abc', 'abc', 'abc']
+      }
+    );
+    expect(Object.keys(response)).toEqual(resultSetHeader);
+  })
+  it("inserts users using insertMany", async () => {
+    deleteUsers();
+    const tables = await getTables();
+    const users = tables.users;
+    const response = await dogql.insertMany(users, [
+      {
+        name: "alex",
+        email: "alex@mail.com",
+        password: "123",
+      },
+      {
+        name: "herbie",
+        email: "herbie@mail.com",
+        password: "abc",
+      },
+      {
+        name: "emmma",
+        email: "emmma@mail.com",
+        password: "abc",
+      },
+    ])
+    expect(Object.keys(response)).toEqual(resultSetHeader);
+  })
   it("updates a user", async () => {
     const tables = await getTables();
     const users = tables.users;
